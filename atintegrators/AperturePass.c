@@ -1,6 +1,5 @@
-#include "mex.h"
 #include <math.h>
-#include "elempass.h"
+#include "at.h"
 
 static void markaslost(double *r6,int idx)
 {
@@ -25,7 +24,7 @@ void AperturePass(double *r_in, double *limits, int num_particles)
     }
 }
 
-#ifdef ATPY
+#ifdef PYAT
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 
@@ -36,10 +35,12 @@ int atpyPass(double *rin, int num_particles, PyObject *drift_element)
 	return 0;
 }
 
-#endif /*ATPY*/
+#endif /*PYAT*/
 
-#ifndef NOMEX
+#ifdef MATLAB_MEX_FILE
 
+#include "mex.h"
+#include "elempass.h"
 #include "mxutils.c"
 
 ExportMode int* passFunction(const mxArray *ElemData,int *FieldNumbers,
@@ -104,4 +105,4 @@ void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         mexErrMsgIdAndTxt("AT:WrongArg","Needs 0 or 2 arguments");
     }
 }
-#endif /*NOMEX*/
+#endif /*MATLAB_MEX_FILE*/

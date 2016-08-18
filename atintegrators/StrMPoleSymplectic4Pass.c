@@ -164,11 +164,13 @@ int atpyPass(double *rin, int num_particles, PyObject *element)
 	double length = py_get_double(element, "length");
 	long max_order = py_get_long(element, "max_order");
 	long num_int_steps = py_get_long(element, "num_int_steps");
-	double *t1 = get_t1(element);
-	double *t2 = get_t2(element);
-	double *r1 = get_r1(element);
-	double *r2 = get_r2(element);
-	StrMPoleSymplectic4Pass(rin, length, NULL, NULL, max_order, num_int_steps, t1, t2, r1, r2, NULL, NULL, num_particles);
+	double *t1 = numpy_get_double_array(element, "t1");
+	double *t2 = numpy_get_double_array(element, "t2");
+	double *r1 = numpy_get_double_array(element, "r1");
+	double *r2 = numpy_get_double_array(element, "r2");
+	double *polyA = numpy_get_double_array(element, "polynom_a");
+	double *polyB = numpy_get_double_array(element, "polynom_b");
+	StrMPoleSymplectic4Pass(rin, length, polyA, polyB, (int)max_order, (int)num_int_steps, t1, t2, r1, r2, NULL, NULL, num_particles);
 	return 0;
 }
 
