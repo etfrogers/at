@@ -1,6 +1,9 @@
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 
+
+static int array_imported = 0;
+
 long py_get_long(PyObject *element, char *name) {
 	return PyInt_AsLong(PyObject_GetAttrString(element, name));
 }
@@ -10,7 +13,10 @@ double py_get_double(PyObject *element, char *name) {
 }
 
 double *numpy_get_double_array(PyObject *element, char *name) {
-	import_array()
+	if (!array_imported) {
+		import_array();
+		array_imported = 1;
+	}
 	PyObject *array;
 	if (PyObject_HasAttrString(element, name)) {
 		array = PyObject_GetAttrString(element, name);
