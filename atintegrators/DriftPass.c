@@ -34,21 +34,23 @@ void DriftPass(double *r_in, double le,
   }
 }
 
-#ifdef PYAT
+#ifdef ATPY
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
+#include "pyutils.c"
 
 int atpyPass(double *rin, int num_particles, PyObject *at_element, ,struct parameters *Param)
 {
-	double length = PyFloat_AsDouble(PyObject_GetAttrString(at_element, "length"));
-    /* extract all necessary fields */
-    /* check existence of optional fields T1, T2,.. */
-	DriftPass(rin, length, NULL, NULL, NULL, NULL, NULL, NULL, num_particles);
+	double length = py_get_double(element, "length");
+	double *t1 = get_t1(element);
+	double *t2 = get_t2(element);
+	double *r1 = get_r1(element);
+	double *r2 = get_r2(element);
+	DriftPass(rin, length, t1, t2, r1, r2, NULL, NULL, num_particles);
 	return 0;
 }
 
-#endif /*PYAT*/
-
+#endif /*ATPY*/
 
 #ifdef MATLAB_MEX_FILE
 

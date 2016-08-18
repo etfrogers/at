@@ -155,6 +155,26 @@ void StrMPoleSymplectic4Pass(double *r, double le, double *A, double *B,
     }
 }
 
+#ifdef ATPY
+#include <Python.h>
+#include <numpy/ndarrayobject.h>
+#include "pyutils.c"
+
+int atpyPass(double *rin, int num_particles, PyObject *element)
+{
+	double length = py_get_double(element, "length");
+	long max_order = py_get_long(element, "max_order");
+	long num_int_steps = py_get_long(element, "num_int_steps");
+	double *t1 = get_t1(element);
+	double *t2 = get_t2(element);
+	double *r1 = get_r1(element);
+	double *r2 = get_r2(element);
+	StrMPoleSymplectic4Pass(rin, length, NULL, NULL, max_order, num_int_steps, t1, t2, r1, r2, NULL, NULL, num_particles);
+	return 0;
+}
+
+#endif /*ATPY*/
+
 #ifndef NOMEX
 
 #include "mxutils.c"

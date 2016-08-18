@@ -25,6 +25,19 @@ void AperturePass(double *r_in, double *limits, int num_particles)
     }
 }
 
+#ifdef ATPY
+#include <Python.h>
+#include <numpy/ndarrayobject.h>
+
+int atpyPass(double *rin, int num_particles, PyObject *drift_element)
+{
+	/* TODO limits */
+	AperturePass(rin, NULL, 1);
+	return 0;
+}
+
+#endif /*ATPY*/
+
 #ifndef NOMEX
 
 #include "mxutils.c"

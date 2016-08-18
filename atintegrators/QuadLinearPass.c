@@ -129,6 +129,25 @@ void QuadLinearPass(double *r, double le, double kv, double *T1, double *T2, dou
 		}		
 }
 
+#ifdef ATPY
+#include <Python.h>
+#include <numpy/ndarrayobject.h>
+#include "pyutils.c"
+
+int atpyPass(double *rin, int num_particles, PyObject *element)
+{
+	double length = py_get_double(element, "length");
+	double k = py_get_double(element, "k");
+	double *t1 = get_t1(element);
+	double *t2 = get_t2(element);
+	double *r1 = get_r1(element);
+	double *r2 = get_r2(element);
+	QuadLinearPass(rin, length, k, t1, t2, r1, r2, num_particles);
+	return 0;
+}
+
+#endif /*ATPY*/
+
 /********** END PHYSICS SECTION ***********************************************/
 /******************************************************************************/
 #ifndef NOMEX

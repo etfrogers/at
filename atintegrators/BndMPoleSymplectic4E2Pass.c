@@ -277,8 +277,36 @@ void BndMPoleSymplectic4E2Pass(double *r, double le, double irho, double *A, dou
 			}
 }
 
+#ifdef ATPY
+#include <Python.h>
+#include <numpy/ndarrayobject.h>
+#include "pyutils.c"
 
-    	
+int atpyPass(double *rin, int num_particles, PyObject *element)
+{
+	double length = py_get_double(element, "length");
+	double bending_angle = py_get_double(element, "bending_angle");
+	double entrance_angle = py_get_double(element, "entrance_angle");
+	double exit_angle = py_get_double(element, "exit_angle");
+	double fint1 = py_get_double(element, "fringe_int_1");
+	double fint2 = py_get_double(element, "fringe_int_2");
+	double gap = py_get_double(element, "gap");
+	double irho = bending_angle / length;
+	long max_order = py_get_long(element, "max_order");
+	long num_int_steps = py_get_long(element, "num_int_steps");
+	double *t1 = get_t1(element);
+	double *t2 = get_t2(element);
+	double *r1 = get_r1(element);
+	double *r2 = get_r2(element);
+	printf("%f %f %d %d\n", length, irho, max_order, num_int_steps);
+	printf("%f %f %f %f\n", entrance_angle, exit_angle, fint1, fint2);
+	double polyA[] = {0, 0, 0, 0};
+	double polyB[] = {0, 0, 0, 0};
+	BndMPoleSymplectic4E2Pass(rin, length, irho, &polyA, &polyB, max_order, num_int_steps, entrance_angle, exit_angle, fint1, fint2, gap, 0, 0, t1, t2, r1, r2, num_particles);
+	return 0;
+}
+
+#endif /*ATPY*/
 
 #ifndef NOMEX
 
