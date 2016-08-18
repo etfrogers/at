@@ -1,6 +1,6 @@
 MEX=/dls_sw/prod/tools/RHEL6-x86_64/matlab/R2014a/prefix/bin/mex
 
-FLAGS=-DGLNXA64 CFLAGS="-std=c99 -fPIC -shared" -DATPY
+FLAGS=-DGLNXA64 CFLAGS="-std=c99 -fPIC -shared" -DPYAT
 PYTHON=/dls_sw/prod/tools/RHEL6-x86_64/Python/2-7-3/prefix/include/python2.7/
 LPYTHON=/tmp/python
 NUMPY=/dls_sw/prod/tools/RHEL6-x86_64/numpy/1-11-1/prefix/lib/python2.7/site-packages/numpy-1.11.1-py2.7-linux-x86_64.egg/numpy/core/include/

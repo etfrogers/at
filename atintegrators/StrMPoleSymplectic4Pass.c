@@ -1,5 +1,4 @@
-#include "mex.h"
-#include "elempass.h"
+#include "at.h"
 #include "atlalib.c"
 
 
@@ -155,7 +154,7 @@ void StrMPoleSymplectic4Pass(double *r, double le, double *A, double *B,
     }
 }
 
-#ifdef ATPY
+#ifdef PYAT
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 #include "pyutils.c"
@@ -173,9 +172,12 @@ int atpyPass(double *rin, int num_particles, PyObject *element)
 	return 0;
 }
 
-#endif /*ATPY*/
+#endif /*PYAT*/
 
-#ifndef NOMEX
+#ifdef MATLAB_MEX_FILE
+
+#include "mex.h"
+#include "elempass.h"
 
 #include "mxutils.c"
 
@@ -315,4 +317,4 @@ void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         mexErrMsgIdAndTxt("AT:WrongArg","Needs 0 or 2 arguments");
     }
 }
-#endif
+#endif /*MATLAB_MEX_FILE*/

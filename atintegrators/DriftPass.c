@@ -34,7 +34,7 @@ void DriftPass(double *r_in, double le,
   }
 }
 
-#ifdef ATPY
+#ifdef PYAT
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 #include "pyutils.c"
@@ -50,7 +50,7 @@ int atpyPass(double *rin, int num_particles, PyObject *at_element, ,struct param
 	return 0;
 }
 
-#endif /*ATPY*/
+#endif /*PYAT*/
 
 #ifdef MATLAB_MEX_FILE
 

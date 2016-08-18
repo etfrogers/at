@@ -1,6 +1,6 @@
-#include "mex.h"
 #include <math.h>
 #include "elempass.h"
+#include "at.h"
 #include "atlalib.c"
 #include "atphyslib.c"
 
@@ -277,7 +277,7 @@ void BndMPoleSymplectic4E2Pass(double *r, double le, double irho, double *A, dou
 			}
 }
 
-#ifdef ATPY
+#ifdef PYAT
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 #include "pyutils.c"
@@ -306,9 +306,12 @@ int atpyPass(double *rin, int num_particles, PyObject *element)
 	return 0;
 }
 
-#endif /*ATPY*/
+#endif /*PYAT*/
 
-#ifndef NOMEX
+#ifndef MATLAB_MEX_FILE
+
+#include "mex.h"
+#include "elempass.h"
 
 ExportMode int* passFunction(const mxArray *ElemData, int *FieldNumbers,
 								double *r_in, int num_particles, int mode)
@@ -735,4 +738,4 @@ void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 }
-#endif
+#endif /*MATLAB_MEX_FILE*/

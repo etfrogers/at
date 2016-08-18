@@ -7,8 +7,7 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include "mex.h"
-#include "elempass.h"
+#include "at.h"
 #include "atlalib.c"
 
 
@@ -129,7 +128,7 @@ void QuadLinearPass(double *r, double le, double kv, double *T1, double *T2, dou
 		}		
 }
 
-#ifdef ATPY
+#ifdef PYAT
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 #include "pyutils.c"
@@ -146,12 +145,14 @@ int atpyPass(double *rin, int num_particles, PyObject *element)
 	return 0;
 }
 
-#endif /*ATPY*/
+#endif /*PYAT*/
 
 /********** END PHYSICS SECTION ***********************************************/
 /******************************************************************************/
-#ifndef NOMEX
+#ifdef MATLAB_MEX_FILE
 /********** WINDOWS DLL GATEWAY SECTION ***************************************/
+#include "mex.h"
+#include "elempass.h"
 
 
 ExportMode int* passFunction(const mxArray *ElemData, int *FieldNumbers,
@@ -348,4 +349,4 @@ void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	    }
 	}
 }
-#endif
+#endif /*MATLAB_MEX_FILE*/
