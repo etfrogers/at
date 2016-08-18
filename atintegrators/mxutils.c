@@ -1,4 +1,5 @@
 #include <string.h>
+#include "mex.h"
 
 static char* ElemName(const mxArray *ElemData)
 {
