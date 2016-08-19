@@ -1,5 +1,3 @@
-#include "mex.h"
-#include "elempass.h"
 #include "atlalib.c"
 #include <math.h>
 
@@ -75,8 +73,9 @@ void DeltaQPass(double *r_in, int num_particles, double alphax, double alphay,
     }
 }
 
-#ifndef NOMEX
+#ifdef MATLAB_MEX_FILE
 
+#include "elempass.h"
 #include "mxutils.c"
 
 ExportMode int* passFunction(const mxArray *ElemData,int *FieldNumbers,

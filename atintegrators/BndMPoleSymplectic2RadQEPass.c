@@ -1,6 +1,4 @@
-#include "mex.h"
-#include<math.h>
-#include "elempass.h"
+#include "at.h"
 #include "atlalib.c"
 #include "atphyslib.c"
 /*
@@ -278,11 +276,12 @@ void BndMPoleSymplectic4RadPass(double *r, double le, double irho, double *A, do
 			}
 }
 
+#ifdef MATLAB_MEX_FILE
+#define NUM_FIELDS_2_REMEMBER 16
 
 ExportMode int* passFunction(const mxArray *ElemData, int *FieldNumbers,
 								double *r_in, int num_particles, int mode)
 
-#define NUM_FIELDS_2_REMEMBER 16
 
 
 {	double *A , *B;
@@ -682,4 +681,4 @@ void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 }
 
 
-
+#endif

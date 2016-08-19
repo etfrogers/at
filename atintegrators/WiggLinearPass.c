@@ -1,7 +1,4 @@
-#include <stdlib.h>
-#include <math.h>
-#include "mex.h"
-#include "elempass.h"
+#include "at.h"
 #include "atlalib.c"
 
 
@@ -85,7 +82,8 @@ void WiggLinearPass(double *r, double le, double invrho, double kxkz, double *T1
 
 /********** END PHYSICS SECTION ***********************************************/
 /******************************************************************************/
-#ifndef NOMEX
+#ifdef MATLAB_MEX_FILE
+
 /********** WINDOWS DLL GATEWAY SECTION ***************************************/
 
 
@@ -207,4 +205,4 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
    }
 }
-#endif
+#endif /*MATLAB_MEX_FILE*/

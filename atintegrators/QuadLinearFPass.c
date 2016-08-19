@@ -6,10 +6,7 @@
 */
 
 
-#include <stdlib.h>
-#include <math.h>
-#include "mex.h"
-#include "elempass.h"
+#include "at.h"
 #include "atlalib.c"
 
 
@@ -202,6 +199,7 @@ void QuadLinearFPass(double *r, double le, double kv, double I1a, double I1b,dou
 
 /********** WINDOWS DLL GATEWAY SECTION ***************************************/
 
+#ifdef MATLAB_MEX_FILE
 
 ExportMode int* passFunction(const mxArray *ElemData, int *FieldNumbers,
 								double *r_in, int num_particles, int mode)
@@ -436,3 +434,5 @@ void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	    }
 	}
 }
+
+#endif /*MATLAB_MEX_FILE*/

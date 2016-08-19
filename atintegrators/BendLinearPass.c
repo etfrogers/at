@@ -5,11 +5,9 @@
 */
 
 #include <math.h>
-#include "mex.h"
-#include "elempass.h"
+#include "at.h"
 #include "atlalib.c"
 #include "atphyslib.c"
-#include "matrix.h"
 
 
 #define SQR(X) X*X
@@ -222,7 +220,9 @@ void BendLinearPass(double *r, double le, double grd ,double ba, double bye,
 		}	
 }
 
-#ifndef NOMEX
+#ifdef MATLAB_MEX_FILE
+#include "mex.h"
+#include "elempass.h"
 
 ExportMode int* passFunction(const mxArray *ElemData, int *FieldNumbers,
 								double *r_in, int num_particles, int mode)
@@ -570,4 +570,4 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
  }
- #endif
+ #endif /*MATLAB_MEX_FILE*/

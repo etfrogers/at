@@ -4,8 +4,7 @@
    A.Terebilo terebilo@slac.stanford.edu
 */
 
-#include "mex.h"
-#include "elempass.h"
+#include "at.h"
 #include "atlalib.c"
 
 
@@ -34,8 +33,9 @@ void IdentityPass(double *r_in,
     }
 }
 
-#ifndef NOMEX
+#ifdef MATLAB_MEX_FILE
 
+#include "elempass.h"
 #include "mxutils.c"
 #define NUM_FIELDS_2_REMEMBER 6
 

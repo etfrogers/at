@@ -1,11 +1,8 @@
-#include <stdlib.h>
-#include <math.h>
+#include "at.h"
 #include <time.h>
 #if !(defined PCWIN || defined PCWIN32 || defined PCWIN64)
 #include <sys/time.h>
 #endif
-#include "at.h"
-#include "mex.h"
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif

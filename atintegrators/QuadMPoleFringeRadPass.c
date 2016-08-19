@@ -1,5 +1,4 @@
-#include "mex.h"
-#include "elempass.h"
+#include "at.h"
 #include "atlalib.c"
 #include "driftkickrad.c"	/* drift6.c, strthinkickrad.c */
 #include "quadfringe.c"		/* QuadFringePassP, QuadFringePassN */
@@ -134,8 +133,9 @@ void QuadMPoleFringeRadPass(double *r, double le, const double *A, const double 
     }
 }
 
-#ifndef NOMEX
+#ifdef MATLAB_MEX_FILE
 
+#include "elempass.h"
 #include "mxutils.c"
 
 ExportMode int* passFunction(const mxArray *ElemData, int *FieldNumbers,

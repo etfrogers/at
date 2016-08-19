@@ -3,12 +3,14 @@
 
 #ifdef MATLAB_MEX_FILE
 
+#include "mex.h"
 #include <matrix.h>
 
 #else
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #ifndef NAN
 static const double dnan = 0.0 / 0.0;

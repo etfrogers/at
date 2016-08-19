@@ -5,8 +5,6 @@
 */
 
 
-#include <stdlib.h>
-#include <math.h>
 #include "at.h"
 #include "atlalib.c"
 

@@ -1,5 +1,3 @@
-#include <math.h>
-#include "elempass.h"
 #include "at.h"
 #include "atlalib.c"
 #include "atphyslib.c"
@@ -306,9 +304,8 @@ int atpyPass(double *rin, int num_particles, PyObject *element)
 
 #endif /*PYAT*/
 
-#ifndef MATLAB_MEX_FILE
+#ifdef MATLAB_MEX_FILE
 
-#include "mex.h"
 #include "elempass.h"
 
 ExportMode int* passFunction(const mxArray *ElemData, int *FieldNumbers,
