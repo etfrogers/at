@@ -6,8 +6,8 @@
  * 5. Return numpy array.
  */
 
-#include <stdio.h>
 #include <Python.h>
+#include <stdio.h>
 #include <numpy/ndarrayobject.h>
 
 // Linux only
@@ -90,7 +90,7 @@ int pass_element(double *rin, PyObject *element) {
 
 /*
  * Arguments:
- *  - the_ring: list of elements from aphla
+ *  - the_ring: sequence of elements
  *  - rin: numpy 6-vector of initial conditions
  *  - num_turns: int number of turns to simulate
  */
@@ -109,18 +109,12 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
 		return NULL;
 	}
 
-	npy_intp dims[10];
+	npy_intp dims[1];
 	PyArray_Descr *descr;
 	descr = PyArray_DescrFromType(NPY_DOUBLE);
 	if (!PyArray_AsCArray((PyObject **)&rin, (void *)&arin, dims, 1, descr) < 0) {
 		printf("Conversion failed.\n");
 		return NULL;
-	}
-	for (i = 0; i < 10; i++) {
-		printf("Dimensions: %ld\n", dims[i]);
-	}
-	for (i = 0; i < 6; i++) {
-		printf("The %dth element of the array is %f\n", i, arin[i]);
 	}
 	int num_elements = PyList_Size(element_list);
 	printf("There are %d elements in the list\n", num_elements);

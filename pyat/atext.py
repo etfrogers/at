@@ -21,7 +21,6 @@ PASS_METHODS = {'SEXT': 'StrMPoleSymplectic4Pass',
 for element in the_ring:
     family = element.family
     if family == 'BEND':
-        print(element.length)
         element.bending_angle = 0.1309
         element.entrance_angle = 0.0654
         element.exit_angle = 0.0654
