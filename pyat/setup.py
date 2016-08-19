@@ -1,6 +1,3 @@
-# To run with dls-python, you need to use the full path.
-from pkg_resources import require
-require('numpy')
 from distutils.core import setup, Extension
 import numpy
 
