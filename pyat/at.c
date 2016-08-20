@@ -15,7 +15,7 @@
 
 #define MAX_ORDER 3
 #define MAX_INT_STEPS 5
-#define INTEGRATOR_PATH "/home/hgs15624/code/matlab/atcollab/atintegrators/"
+#define INTEGRATOR_PATH "../atintegrators/"
 #define ATPY_PASS "atpyPass"
 
 /* Directly copied from atpass.c */
@@ -46,7 +46,7 @@ int call_pass_method(double *rin, PyObject *element, char *fn_name) {
 	void *fn_handle;
 	strcpy(lib_file, INTEGRATOR_PATH);
 	strcat(lib_file, fn_name);
-	strcat(lib_file, ".mexa64");
+	strcat(lib_file, ".so");
 	LibraryListPtr = SearchLibraryList(LibraryList, fn_name);
 	if (LibraryListPtr) {
 		fn_handle = LibraryListPtr->FunctionHandle;

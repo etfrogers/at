@@ -12,4 +12,4 @@ main: $(OBJ)
 	$(CC) -I$(NUMPY) -I$(PYTHON) $(FLAGS) -lpython2.7   $^ -o $@
 
 clean:
-	rm *.mexa64
+	rm -rf *.so
