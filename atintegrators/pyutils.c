@@ -1,8 +1,17 @@
 #include <Python.h>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
 
-
 static int array_imported = 0;
+
+#if PY_MAJOR_VERSION >= 3
+int
+#else
+void
+#endif
+init_numpy() {
+	import_array();
+}
 
 long py_get_long(PyObject *element, char *name) {
 	return PyInt_AsLong(PyObject_GetAttrString(element, name));
@@ -14,7 +23,7 @@ double py_get_double(PyObject *element, char *name) {
 
 double *numpy_get_double_array(PyObject *element, char *name) {
 	if (!array_imported) {
-		import_array();
+		init_numpy();
 		array_imported = 1;
 	}
 	PyObject *array;

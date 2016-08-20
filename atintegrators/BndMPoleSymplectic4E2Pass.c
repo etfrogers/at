@@ -276,8 +276,7 @@ void BndMPoleSymplectic4E2Pass(double *r, double le, double irho, double *A, dou
 }
 
 #ifdef PYAT
-#include <Python.h>
-#include <numpy/ndarrayobject.h>
+
 #include "pyutils.c"
 
 int atpyPass(double *rin, int num_particles, PyObject *element)

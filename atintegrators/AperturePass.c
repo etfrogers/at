@@ -25,8 +25,8 @@ void AperturePass(double *r_in, double *limits, int num_particles)
 }
 
 #ifdef PYAT
-#include <Python.h>
-#include <numpy/ndarrayobject.h>
+
+#include "pyutils.c"
 
 int atpyPass(double *rin, int num_particles, PyObject *drift_element)
 {

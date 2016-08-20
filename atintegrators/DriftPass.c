@@ -35,8 +35,7 @@ void DriftPass(double *r_in, double le,
 }
 
 #ifdef PYAT
-#include <Python.h>
-#include <numpy/ndarrayobject.h>
+
 #include "pyutils.c"
 
 int atpyPass(double *rin, int num_particles, PyObject *at_element, ,struct parameters *Param)
