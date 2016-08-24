@@ -4,6 +4,7 @@ import numpy
 class Element(object):
     def __init__(self, length):
         self.length = length
+        self.pass_method = 'DriftPass'
 
 
 class Drift(Element):
@@ -19,15 +20,15 @@ class Magnet(Element):
         self.polynom_b = numpy.array([0,0,0,0])
 
 
-class Quad(Element):
+class Quad(Magnet):
     def __init__(self, length, k1):
         super(Quad, self).__init__(length)
         self.polynom_b[1] = k1
         self.pass_method = 'QuadLinearPass'
 
 
-class Sext(Element):
+class Sext(Magnet):
     def __init__(self, length, k2):
-        super(Quad, self).__init__(length)
+        super(Sext, self).__init__(length)
         self.polynom_b[2] = k2
         self.pass_method = 'StrMPoleSymplectic4Pass'
