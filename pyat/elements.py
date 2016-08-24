@@ -2,7 +2,7 @@ import numpy
 
 
 class Element(object):
-    def __init__(self, name, length):
+    def __init__(self, name, length=0):
         self.name = name
         self.length = length
         self.pass_method = 'DriftPass'
