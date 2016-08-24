@@ -11,7 +11,7 @@ def rin():
 
 
 def test_drift_offset(rin):
-    d = elements.Drift(1)
+    d = elements.Drift('drift', 1)
     lattice = [d]
     rin[0] = 1e-6
     rin[2] = 2e-6
