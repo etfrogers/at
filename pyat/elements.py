@@ -5,7 +5,7 @@ class Element(object):
     def __init__(self, name, length=0):
         self.name = name
         self.length = length
-        self.pass_method = 'DriftPass'
+        self.pass_method = 'IdentityPass'
 
 
 class Drift(Element):
