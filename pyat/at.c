@@ -102,10 +102,11 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
 	int i, j;
 
 	if (!PyArg_ParseTuple(args, "O!O!i", &PyList_Type, &element_list, &PyArray_Type, &rin, &num_turns)) {
+		PyErr_SetString(PyExc_ValueError, "Failed to parse arguments to atpass");
 		return NULL;
 	}
 	if (!PyArray_Check(rin)) {
-		printf("not an array!\n");
+		PyErr_SetString(PyExc_ValueError, "Not a numpy array.");
 		return NULL;
 	}
 
@@ -113,11 +114,11 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
 	PyArray_Descr *descr;
 	descr = PyArray_DescrFromType(NPY_DOUBLE);
 	if (!PyArray_AsCArray((PyObject **)&rin, (void *)&arin, dims, 2, descr) < 0) {
-		printf("Conversion failed.\n");
+		PyErr_SetString(PyExc_ValueError, "Could not convert into numpy array");
 		return NULL;
 	}
 	if (dims[0] != 6) {
-		printf("Numpy array is not 6D.\n");
+		PyErr_SetString(PyExc_ValueError, "Numpy array is not 6D");
 		return NULL;
 	}
 

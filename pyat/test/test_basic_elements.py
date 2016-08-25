@@ -10,6 +10,26 @@ def rin():
     return rin
 
 
+def test_incorrect_types_raises_value_error(rin):
+    l = []
+    with pytest.raises(ValueError):
+        at.atpass(1, rin, 1)
+    with pytest.raises(ValueError):
+        at.atpass(l, 1, 1)
+    with pytest.raises(ValueError):
+        at.atpass(l, rin, 'a')
+
+
+def test_incorrect_dimensions_raises_value_error():
+    l = []
+    rin = numpy.array(numpy.zeros((7,1)))
+    with pytest.raises(ValueError):
+        at.atpass(l, rin, 1)
+    rin = numpy.array(numpy.zeros((6,)))
+    with pytest.raises(ValueError):
+        at.atpass(l, rin, 1)
+
+
 def test_marker(rin):
     m = elements.Marker('marker')
     assert m.name == 'marker'
