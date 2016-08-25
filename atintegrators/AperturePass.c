@@ -28,10 +28,10 @@ void AperturePass(double *r_in, double *limits, int num_particles)
 
 #include "pyutils.c"
 
-int atpyPass(double *rin, int num_particles, PyObject *drift_element)
+int atpyPass(double *rin, int num_particles, PyObject *element)
 {
-	/* TODO limits */
-	AperturePass(rin, NULL, 1);
+	double *limits = numpy_get_double_array(element, "limits");
+	AperturePass(rin, limits, 1);
 	return 0;
 }
 

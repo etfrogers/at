@@ -33,6 +33,24 @@ void IdentityPass(double *r_in,
     }
 }
 
+#ifdef PYAT
+
+#include "pyutils.c"
+
+int atpyPass(double *rin, int num_particles, PyObject *element)
+{
+	double *t1 = numpy_get_double_array(element, "t1");
+	double *t2 = numpy_get_double_array(element, "t2");
+	double *r1 = numpy_get_double_array(element, "r1");
+	double *r2 = numpy_get_double_array(element, "r2");
+	double *limits = numpy_get_double_array(element, "limits");
+	double *axesptr = numpy_get_double_array(element, "axesptr");
+	IdentityPass(rin, t1, t2, r1, r2, limits, axesptr, 1);
+	return 0;
+}
+
+#endif /*PYAT*/
+
 #ifdef MATLAB_MEX_FILE
 
 #include "elempass.h"
