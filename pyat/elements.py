@@ -8,6 +8,19 @@ class Element(object):
         self.pass_method = 'IdentityPass'
 
 
+class Marker(Element):
+    def __init__(self, name):
+        super(Marker, self).__init__(name)
+
+
+class Aperture(Element):
+    def __init__(self, name, limits):
+        assert len(limits) == 4
+        super(Aperture, self).__init__(name)
+        self.limits = numpy.array(limits)
+        self.pass_method = 'AperturePass'
+
+
 class Drift(Element):
     def __init__(self, name, length):
         super(Drift, self).__init__(name, length)
