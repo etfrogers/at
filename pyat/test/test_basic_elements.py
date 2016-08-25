@@ -53,3 +53,16 @@ def test_drift_offset(rin):
     rin_orig = numpy.array(rin, copy=True)
     at.atpass(lattice, rin, 1)
     numpy.testing.assert_equal(rin, rin_orig)
+
+
+def test_drift_divergence(rin):
+    d = elements.Drift('drift', 1.0)
+    assert d.name == 'drift'
+    assert d.length == 1
+    lattice = [d]
+    rin[1] = 1e-6
+    rin[3] = -2e-6
+    at.atpass(lattice, rin, 1)
+    # results from Matlab
+    rin_expected = numpy.array([1e-6, 1e-6, -2e-6, -2e-6, 0, 2.5e-12])
+    numpy.testing.assert_equal(rin, rin_expected)
