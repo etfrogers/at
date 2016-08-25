@@ -40,7 +40,7 @@ struct LibraryListElement* SearchLibraryList(struct LibraryListElement *head, co
 
 typedef void (*pass_function)(double *rin, int num_particles, PyObject *element);
 
-int call_pass_method(double *rin, PyObject *element, char *fn_name) {
+int call_pass_method(double *rin, int num_particles, PyObject *element, char *fn_name) {
 	char *lib_file = malloc(sizeof(char) * 1000);
 	struct LibraryListElement *LibraryListPtr;
 	void *fn_handle;
@@ -76,14 +76,14 @@ int call_pass_method(double *rin, PyObject *element, char *fn_name) {
 }
 
 
-int pass_element(double *rin, PyObject *element) {
+int pass_element(double *rin, int num_particles, PyObject *element) {
 	if (!PyObject_HasAttrString(element, "pass_method")) {
 		printf("No pass method.\n");
 		return 1;
 	}
 	PyObject *fn_name_object = PyObject_GetAttrString(element, "pass_method");
 	char *fn_name = PyString_AsString(fn_name_object);
-	call_pass_method(rin, element, fn_name);
+	call_pass_method(rin, num_particles, element, fn_name);
 	return 0;
 }
 
@@ -97,7 +97,7 @@ int pass_element(double *rin, PyObject *element) {
 static PyObject *at_atpass(PyObject *self, PyObject *args) {
 	PyObject *element_list;
 	PyArrayObject *rin;
-	double *arin;
+	double **arin;
 	int num_turns;
 	int i, j;
 
@@ -109,20 +109,26 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
 		return NULL;
 	}
 
-	npy_intp dims[1];
+	npy_intp dims[2];
 	PyArray_Descr *descr;
 	descr = PyArray_DescrFromType(NPY_DOUBLE);
-	if (!PyArray_AsCArray((PyObject **)&rin, (void *)&arin, dims, 1, descr) < 0) {
+	if (!PyArray_AsCArray((PyObject **)&rin, (void *)&arin, dims, 2, descr) < 0) {
 		printf("Conversion failed.\n");
 		return NULL;
 	}
+	if (dims[0] != 6) {
+		printf("Numpy array is not 6D.\n");
+		return NULL;
+	}
+
 	int num_elements = PyList_Size(element_list);
 	printf("There are %d elements in the list\n", num_elements);
+	printf("There are %d particles\n", dims[1]);
 	printf("Going for %d turns\n", num_turns);
 	for (i = 0; i < num_turns; i++) {
 		for (j = 0; j < num_elements; j++) {
 			PyObject *element = PyList_GetItem(element_list, j);
-			pass_element(arin, element);
+			pass_element(*arin, dims[1], element);
 		}
 	}
 	return Py_BuildValue("i", 1);
