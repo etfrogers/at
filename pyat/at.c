@@ -117,19 +117,19 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
 		PyErr_SetString(PyExc_ValueError, "Could not convert into numpy array");
 		return NULL;
 	}
-	if (dims[0] != 6) {
+	if (dims[1] != 6) {
 		PyErr_SetString(PyExc_ValueError, "Numpy array is not 6D");
 		return NULL;
 	}
 
 	int num_elements = PyList_Size(element_list);
 	printf("There are %d elements in the list\n", num_elements);
-	printf("There are %d particles\n", dims[1]);
+	printf("There are %d particles\n", dims[0]);
 	printf("Going for %d turns\n", num_turns);
 	for (i = 0; i < num_turns; i++) {
 		for (j = 0; j < num_elements; j++) {
 			PyObject *element = PyList_GetItem(element_list, j);
-			pass_element(*arin, dims[1], element);
+			pass_element(*arin, dims[0], element);
 		}
 	}
 	return Py_BuildValue("i", 1);

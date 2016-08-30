@@ -41,8 +41,8 @@ for element in the_ring:
     except KeyError:
         element.pass_method = 'DriftPass'
 
-rin = numpy.zeros(6)
-rin[0] = 1e-6
+rin = numpy.zeros((1, 6))
+rin[0,0] = 1e-6
 print(rin)
 t = time.time()
 at.atpass(the_ring, rin, 1000)
