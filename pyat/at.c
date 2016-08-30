@@ -71,7 +71,7 @@ int call_pass_method(double *rin, int num_particles, PyObject *element, char *fn
 	}
 	pass_function pfn;
 	pfn = (pass_function) fn_handle;
-	pfn(rin, 1, element);
+	pfn(rin, num_particles, element);
 	return 0;
 }
 
