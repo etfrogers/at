@@ -9,6 +9,7 @@
 #include <Python.h>
 #include <stdio.h>
 #include <numpy/ndarrayobject.h>
+#include "at.h"
 
 // Linux only
 #include <dlfcn.h>
@@ -38,9 +39,9 @@ struct LibraryListElement* SearchLibraryList(struct LibraryListElement *head, co
         return NULL;
 }
 
-typedef void (*pass_function)(double *rin, int num_particles, PyObject *element);
+typedef void (*pass_function)(double *rin, int num_particles, PyObject *element, struct parameters *param);
 
-int call_pass_method(double *rin, int num_particles, PyObject *element, char *fn_name) {
+int call_pass_method(double *rin, int num_particles, PyObject *element, char *fn_name, struct parameters *param) {
 	char *lib_file = malloc(sizeof(char) * 1000);
 	struct LibraryListElement *LibraryListPtr;
 	void *fn_handle;
@@ -71,19 +72,19 @@ int call_pass_method(double *rin, int num_particles, PyObject *element, char *fn
 	}
 	pass_function pfn;
 	pfn = (pass_function) fn_handle;
-	pfn(rin, num_particles, element);
+	pfn(rin, num_particles, element, param);
 	return 0;
 }
 
 
-int pass_element(double *rin, int num_particles, PyObject *element) {
+int pass_element(double *rin, int num_particles, PyObject *element, struct parameters *param) {
 	if (!PyObject_HasAttrString(element, "pass_method")) {
 		printf("No pass method.\n");
 		return 1;
 	}
 	PyObject *fn_name_object = PyObject_GetAttrString(element, "pass_method");
 	char *fn_name = PyString_AsString(fn_name_object);
-	call_pass_method(rin, num_particles, element, fn_name);
+	call_pass_method(rin, num_particles, element, fn_name, param);
 	return 0;
 }
 
@@ -100,6 +101,11 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
 	double **arin;
 	int num_turns;
 	int i, j;
+	struct parameters param;
+	param.nturn = 0;
+	param.mode = 0;
+	param.T0 = 0;
+	param.RingLength = 0;
 
 	if (!PyArg_ParseTuple(args, "O!O!i", &PyList_Type, &element_list, &PyArray_Type, &rin, &num_turns)) {
 		PyErr_SetString(PyExc_ValueError, "Failed to parse arguments to atpass");
@@ -127,9 +133,10 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
 	printf("There are %d particles\n", dims[0]);
 	printf("Going for %d turns\n", num_turns);
 	for (i = 0; i < num_turns; i++) {
+		param.nturn = i;
 		for (j = 0; j < num_elements; j++) {
 			PyObject *element = PyList_GetItem(element_list, j);
-			pass_element(*arin, dims[0], element);
+			pass_element(*arin, dims[0], element, &param);
 		}
 	}
 	return Py_BuildValue("i", 1);

@@ -130,7 +130,7 @@ void QuadLinearPass(double *r, double le, double kv, double *T1, double *T2, dou
 
 #include "pyutils.c"
 
-int atpyPass(double *rin, int num_particles, PyObject *element)
+int atpyPass(double *rin, int num_particles, PyObject *element, struct parameters *param)
 {
 	double length = py_get_double(element, "length");
 	double k = py_get_double(element, "k1");

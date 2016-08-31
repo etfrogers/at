@@ -158,7 +158,7 @@ void StrMPoleSymplectic4Pass(double *r, double le, double *A, double *B,
 
 #include "pyutils.c"
 
-int atpyPass(double *rin, int num_particles, PyObject *element)
+int atpyPass(double *rin, int num_particles, PyObject *element, struct parameters *param)
 {
 	double length = py_get_double(element, "length");
 	long max_order = py_get_long(element, "max_order");

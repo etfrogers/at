@@ -38,13 +38,13 @@ void DriftPass(double *r_in, double le,
 
 #include "pyutils.c"
 
-int atpyPass(double *rin, int num_particles, PyObject *at_element, ,struct parameters *Param)
+int atpyPass(double *rin, int num_particles, PyObject *at_element, struct parameters *param)
 {
-	double length = py_get_double(element, "length");
-	double *t1 = numpy_get_double_array(element, "t1");
-	double *t2 = numpy_get_double_array(element, "t2");
-	double *r1 = numpy_get_double_array(element, "r1");
-	double *r2 = numpy_get_double_array(element, "r2");
+	double length = py_get_double(at_element, "length");
+	double *t1 = numpy_get_double_array(at_element, "t1");
+	double *t2 = numpy_get_double_array(at_element, "t2");
+	double *r1 = numpy_get_double_array(at_element, "r1");
+	double *r2 = numpy_get_double_array(at_element, "r2");
 	DriftPass(rin, length, t1, t2, r1, r2, NULL, NULL, num_particles);
 	return 0;
 }
