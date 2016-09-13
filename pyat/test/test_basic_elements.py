@@ -33,7 +33,7 @@ def test_incorrect_dimensions_raises_value_error():
 def test_marker(rin):
     m = elements.Marker('marker')
     assert m.name == 'marker'
-    assert m.length == 0
+    assert m.Length == 0
     lattice = [m]
     rin = numpy.random.rand(*rin.shape)
     rin_orig = numpy.array(rin, copy=True)
@@ -44,7 +44,7 @@ def test_marker(rin):
 def test_aperture_inside_limits(rin):
     a = elements.Aperture('aperture', [-1e-3, 1e-3, -1e-4, 1e-4])
     assert a.name == 'aperture'
-    assert a.length == 0
+    assert a.Length == 0
     lattice = [a]
     rin[0][0] = 1e-5
     rin[0][2] = -1e-5
@@ -56,7 +56,7 @@ def test_aperture_inside_limits(rin):
 def test_aperture_outside_limits(rin):
     a = elements.Aperture('aperture', [-1e-3, 1e-3, -1e-4, 1e-4])
     assert a.name == 'aperture'
-    assert a.length == 0
+    assert a.Length == 0
     lattice = [a]
     rin[0][0] = 1e-2
     rin[0][2] = -1e-2
@@ -78,7 +78,7 @@ def test_drift_offset(rin):
 def test_drift_divergence(rin):
     d = elements.Drift('drift', 1.0)
     assert d.name == 'drift'
-    assert d.length == 1
+    assert d.Length == 1
     lattice = [d]
     rin[0][1] = 1e-6
     rin[0][3] = -2e-6
@@ -91,7 +91,7 @@ def test_drift_divergence(rin):
 def test_drift_two_particles(rin):
     d = elements.Drift('drift', 1.0)
     assert d.name == 'drift'
-    assert d.length == 1
+    assert d.Length == 1
     lattice = [d]
     two_rin = numpy.concatenate((rin, rin), axis=0)
     # particle one is offset

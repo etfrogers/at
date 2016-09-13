@@ -7,8 +7,9 @@
  */
 
 #include <Python.h>
-#include <stdio.h>
 #include <numpy/ndarrayobject.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "at.h"
 
 // Linux only
@@ -16,8 +17,12 @@
 
 #define MAX_ORDER 3
 #define MAX_INT_STEPS 5
-#define INTEGRATOR_PATH "../atintegrators/"
+#ifndef INTEGRATOR_PATH
+#define INTEGRATOR_PATH "../atintegrators"
+#endif /*INTEGRATOR_PATH*/
 #define ATPY_PASS "atpyPass"
+
+typedef int (*pass_function)(double *rin, int num_particles, PyObject *element, struct parameters *param);
 
 /* Directly copied from atpass.c */
 static struct LibraryListElement {
@@ -30,7 +35,7 @@ static struct LibraryListElement {
 struct LibraryListElement* SearchLibraryList(struct LibraryListElement *head, const char *method_name)
 {
     /* recusively search the list to check if the library containing method_name is
-     * already loaded. If it is - retutn the pointer to the list element. If not -
+     * already loaded. If it is - return the pointer to the list element. If not -
      * return NULL */
     if (head)
         return (strcmp(head->MethodName, method_name)==0) ? head :
@@ -39,53 +44,46 @@ struct LibraryListElement* SearchLibraryList(struct LibraryListElement *head, co
         return NULL;
 }
 
-typedef void (*pass_function)(double *rin, int num_particles, PyObject *element, struct parameters *param);
+pass_function pass_method(char *fn_name) {
+    pass_function fn_handle = NULL;
+    struct LibraryListElement *LibraryListPtr = SearchLibraryList(LibraryList, fn_name);
 
-int call_pass_method(double *rin, int num_particles, PyObject *element, char *fn_name, struct parameters *param) {
-    char *lib_file = malloc(sizeof(char) * 1000);
-    struct LibraryListElement *LibraryListPtr;
-    void *fn_handle;
-    strcpy(lib_file, INTEGRATOR_PATH);
-    strcat(lib_file, fn_name);
-    strcat(lib_file, ".so");
-    LibraryListPtr = SearchLibraryList(LibraryList, fn_name);
     if (LibraryListPtr) {
         fn_handle = LibraryListPtr->FunctionHandle;
-    } else {
-        printf("Trying to load %s\n", lib_file);
+    }
+    else {
+        char *lib_file = malloc(sizeof(char) * 1000);
+        sprintf(lib_file, "%s/%s.so", INTEGRATOR_PATH, fn_name);
         void *dl_handle = dlopen(lib_file, RTLD_LAZY);
-        char *error = dlerror();
-        if (error) {
-            printf("%s\n", error);
+        free((void *)lib_file);
+        if (dl_handle == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, dlerror());
+            return NULL;
         }
         fn_handle = dlsym(dl_handle, ATPY_PASS);
-        error = dlerror();
-        if (error) {
-            printf("Error loading %s from %s: %s\n", ATPY_PASS, lib_file, error);
+        if (fn_handle == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, dlerror());
+            return NULL;
         }
-        printf("Loaded %p\n", fn_handle);
         LibraryListPtr = (struct LibraryListElement *)malloc(sizeof(struct LibraryListElement));
         LibraryListPtr->Next = LibraryList;
         LibraryListPtr->MethodName = fn_name;
         LibraryListPtr->FunctionHandle = fn_handle;
         LibraryList = LibraryListPtr;
     }
-    pass_function pfn;
-    pfn = (pass_function) fn_handle;
-    pfn(rin, num_particles, element, param);
-    return 0;
+    return fn_handle;
 }
 
 
 int pass_element(double *rin, int num_particles, PyObject *element, struct parameters *param) {
-    if (!PyObject_HasAttrString(element, "pass_method")) {
-        printf("No pass method.\n");
-        return 1;
+    pass_function fn_handle = NULL;
+    PyObject *fn_name_object = PyObject_GetAttrString(element, "PassMethod");
+    if (fn_name_object && (fn_handle = pass_method(PyString_AsString(fn_name_object)))) {
+        return fn_handle(rin, num_particles, element, param);
     }
-    PyObject *fn_name_object = PyObject_GetAttrString(element, "pass_method");
-    char *fn_name = PyString_AsString(fn_name_object);
-    call_pass_method(rin, num_particles, element, fn_name, param);
-    return 0;
+    else {
+        return -1;
+    }
 }
 
 
@@ -98,8 +96,9 @@ int pass_element(double *rin, int num_particles, PyObject *element, struct param
 static PyObject *at_atpass(PyObject *self, PyObject *args) {
     PyObject *element_list;
     PyArrayObject *rin;
-    double **arin;
+    double *drin;
     int num_turns;
+    int num_parts;
     int i, j;
     struct parameters param;
     param.nturn = 0;
@@ -111,32 +110,30 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, "Failed to parse arguments to atpass");
         return NULL;
     }
-    if (!PyArray_Check(rin)) {
-        PyErr_SetString(PyExc_ValueError, "Not a numpy array.");
-        return NULL;
-    }
-
-    npy_intp dims[2];
-    PyArray_Descr *descr;
-    descr = PyArray_DescrFromType(NPY_DOUBLE);
-    if (!PyArray_AsCArray((PyObject **)&rin, (void *)&arin, dims, 2, descr) < 0) {
-        PyErr_SetString(PyExc_ValueError, "Could not convert into numpy array");
-        return NULL;
-    }
-    if (dims[1] != 6) {
+    if (PyArray_DIM(rin,PyArray_NDIM(rin)-1) != 6) {
         PyErr_SetString(PyExc_ValueError, "Numpy array is not 6D");
         return NULL;
     }
+    if (PyArray_TYPE(rin) != NPY_DOUBLE) {
+        PyErr_SetString(PyExc_ValueError, "rin is not a double array");
+        return NULL;
+    }
+    if ((PyArray_FLAGS(rin) & NPY_ARRAY_CARRAY_RO) != NPY_ARRAY_CARRAY_RO) {
+        PyErr_SetString(PyExc_ValueError, "rin is not C aligned");
+        return NULL;
+    }
+    num_parts = (int)(PyArray_SIZE(rin)/6);
+    drin = PyArray_DATA(rin);
 
-    int num_elements = PyList_Size(element_list);
-    printf("There are %d elements in the list\n", num_elements);
-    printf("There are %d particles\n", dims[0]);
+    long num_elements = PyList_Size(element_list);
+    printf("There are %ld elements in the list\n", num_elements);
+    printf("There are %d particles\n", num_parts);
     printf("Going for %d turns\n", num_turns);
     for (i = 0; i < num_turns; i++) {
         param.nturn = i;
         for (j = 0; j < num_elements; j++) {
-            PyObject *element = PyList_GetItem(element_list, j);
-            pass_element(*arin, dims[0], element, &param);
+            PyObject *element = PyList_GET_ITEM(element_list, j);
+            if (pass_element(drin, num_parts, element, &param) != 0) return NULL;
         }
     }
     return Py_BuildValue("i", 1);
