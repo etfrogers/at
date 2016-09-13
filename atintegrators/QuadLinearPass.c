@@ -99,7 +99,7 @@ void QuadLinearPass(double *r, double le, double kv, double *T1, double *T2, dou
 
 	for(c = 0;c<num_particles;c++)
 		{	r6 = r+c*6;
-		    if(!mxIsNaN(r6[0]) & mxIsFinite(r6[4]))
+		    if(!mxIsNaN(r6[0]) && mxIsFinite(r6[4]))
 		    /* 
 		       function quad6 internally calculates the square root
 			   of the energy deviation of the particle 

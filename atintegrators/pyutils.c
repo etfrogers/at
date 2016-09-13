@@ -9,19 +9,19 @@ int
 #else
 void
 #endif
-init_numpy() {
+init_numpy(void) {
     import_array();
 }
 
-long py_get_long(PyObject *element, char *name) {
+static long py_get_long(PyObject *element, char *name) {
     return PyInt_AsLong(PyObject_GetAttrString(element, name));
 }
 
-double py_get_double(PyObject *element, char *name) {
+static double py_get_double(PyObject *element, char *name) {
     return PyFloat_AsDouble(PyObject_GetAttrString(element, name));
 }
 
-double *numpy_get_double_array(PyObject *element, char *name) {
+static double *numpy_get_double_array(PyObject *element, char *name) {
     if (!array_imported) {
         init_numpy();
         array_imported = 1;
