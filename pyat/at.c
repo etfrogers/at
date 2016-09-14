@@ -133,7 +133,12 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
         param.nturn = i;
         for (j = 0; j < num_elements; j++) {
             PyObject *element = PyList_GET_ITEM(element_list, j);
-            if (pass_element(drin, num_parts, element, &param) != 0) return NULL;
+            if (pass_element(drin, num_parts, element, &param) != 0) {
+                char pass_error[50];
+                sprintf(pass_error, "Error occurred during pass method for element %d", j);
+                PyErr_SetString(PyExc_RuntimeError, pass_error);
+                return NULL;
+            }
         }
     }
     return Py_BuildValue("i", 1);
