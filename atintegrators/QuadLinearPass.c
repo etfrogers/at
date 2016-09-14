@@ -99,7 +99,7 @@ void QuadLinearPass(double *r, double le, double kv, double *T1, double *T2, dou
 
 	for(c = 0;c<num_particles;c++)
 		{	r6 = r+c*6;
-		    if(!mxIsNaN(r6[0]) & mxIsFinite(r6[4]))
+		    if(!mxIsNaN(r6[0]) && mxIsFinite(r6[4]))
 		    /* 
 		       function quad6 internally calculates the square root
 			   of the energy deviation of the particle 
@@ -132,14 +132,19 @@ void QuadLinearPass(double *r, double le, double kv, double *T1, double *T2, dou
 
 int atpyPass(double *rin, int num_particles, PyObject *element, struct parameters *param)
 {
-	double length = py_get_double(element, "length");
-	double k = py_get_double(element, "k1");
-	double *t1 = numpy_get_double_array(element, "t1");
-	double *t2 = numpy_get_double_array(element, "t2");
-	double *r1 = numpy_get_double_array(element, "r1");
-	double *r2 = numpy_get_double_array(element, "r2");
-	QuadLinearPass(rin, length, k, t1, t2, r1, r2, num_particles);
-	return 0;
+    PyErr_Clear();
+    double *t1 = numpy_get_double_array(element, "T1");     /* Optional arguments */
+    double *t2 = numpy_get_double_array(element, "T2");
+    double *r1 = numpy_get_double_array(element, "R1");
+    double *r2 = numpy_get_double_array(element, "R2");
+    double length = py_get_double(element, "Length");       /* Mandatory arguments */
+    double k = py_get_double(element, "K");
+    if (PyErr_Occurred())
+        return -1;
+    else {
+        QuadLinearPass(rin, length, k, t1, t2, r1, r2, num_particles);
+        return 0;
+    }
 }
 
 #endif /*PYAT*/
