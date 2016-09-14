@@ -138,11 +138,11 @@ int atpyPass(double *rin, int num_particles, PyObject *element, struct parameter
     double *r1 = numpy_get_double_array(element, "R1");
     double *r2 = numpy_get_double_array(element, "R2");
     double length = py_get_double(element, "Length");       /* Mandatory arguments */
-    double *polyB = numpy_get_double_array(element, "PolynomB");
+    double k = py_get_double(element, "K");
     if (PyErr_Occurred())
         return -1;
     else {
-        QuadLinearPass(rin, length, polyB[1], t1, t2, r1, r2, num_particles);
+        QuadLinearPass(rin, length, k, t1, t2, r1, r2, num_particles);
         return 0;
     }
 }
