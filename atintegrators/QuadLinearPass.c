@@ -140,7 +140,6 @@ int atpyPass(double *rin, int num_particles, PyObject *element, struct parameter
     double length = py_get_double(element, "Length", false);       /* Mandatory arguments */
     double k = py_get_double(element, "K", false);
     if (PyErr_Occurred()) {
-        PyErr_SetString(PyExc_AttributeError, "Problem in QuadLinearPass.");
         return -1;
     } else {
         QuadLinearPass(rin, length, k, t1, t2, r1, r2, num_particles);

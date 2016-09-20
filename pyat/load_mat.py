@@ -49,7 +49,7 @@ def load(filename):
 
 if __name__ == '__main__':
     m = load('../atmat/atmatch/ExampleATMATCH/dba.mat')
-    rin = numpy.array((1e-6,0,0,0,0,0)).reshape((6,1))
+    rin = numpy.array((1e-6,0,0,0,0,0))
     print(rin)
     at.atpass(m, rin, 1)
     print(rin)

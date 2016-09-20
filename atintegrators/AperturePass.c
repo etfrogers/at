@@ -30,7 +30,7 @@ void AperturePass(double *r_in, double *limits, int num_particles)
 
 int atpyPass(double *rin, int num_particles, PyObject *element, struct parameters *param)
 {
-    double *limits = numpy_get_double_array(element, "Limits", true); /* Mandatory arguments */
+    double *limits = numpy_get_double_array(element, "Limits", false); /* Mandatory arguments */
     if (PyErr_Occurred()) {
         return -1;
     } else {
