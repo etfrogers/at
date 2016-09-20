@@ -7,6 +7,7 @@
  */
 
 #include <Python.h>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +15,17 @@
 
 // Linux only
 #include <dlfcn.h>
+
+#if PY_MAJOR_VERSION >= 3
+  #define MOD_ERROR_VAL NULL
+  #define MOD_SUCCESS_VAL(val) val
+  #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
+#else
+  #define MOD_ERROR_VAL
+  #define MOD_SUCCESS_VAL(val)
+  #define MOD_INIT(name) PyMODINIT_FUNC init##name(void)
+  #define PyUnicode_AsUTF8 PyString_AsString
+#endif
 
 #define MAX_ORDER 3
 #define MAX_INT_STEPS 5
@@ -44,7 +56,7 @@ struct LibraryListElement* SearchLibraryList(struct LibraryListElement *head, co
         return NULL;
 }
 
-pass_function pass_method(char *fn_name) {
+static pass_function pass_method(char *fn_name) {
     pass_function fn_handle = NULL;
     struct LibraryListElement *LibraryListPtr = SearchLibraryList(LibraryList, fn_name);
 
@@ -75,10 +87,10 @@ pass_function pass_method(char *fn_name) {
 }
 
 
-int pass_element(double *rin, int num_particles, PyObject *element, struct parameters *param) {
+static int pass_element(double *rin, int num_particles, PyObject *element, struct parameters *param) {
     pass_function fn_handle = NULL;
     PyObject *fn_name_object = PyObject_GetAttrString(element, "PassMethod");
-    if (fn_name_object && (fn_handle = pass_method(PyString_AsString(fn_name_object)))) {
+    if (fn_name_object && (fn_handle = pass_method(PyUnicode_AsUTF8(fn_name_object)))) {
         return fn_handle(rin, num_particles, element, param);
     }
     else {
@@ -136,7 +148,10 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
             if (pass_element(drin, num_parts, element, &param) != 0) {
                 char pass_error[50];
                 sprintf(pass_error, "Error occurred during pass method for element %d", j);
+                PyErr_WarnEx(PyExc_RuntimeWarning, pass_error, 1);
+/*
                 PyErr_SetString(PyExc_RuntimeError, pass_error);
+*/
                 return NULL;
             }
         }
@@ -148,17 +163,36 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
 
 static PyMethodDef AtMethods[] = {
     {"atpass",  at_atpass, METH_VARARGS,
-    "Python clone of atpass"},
+    PyDoc_STR("atpass(line,rin,nturns)\n\nTrack rin along line for nturns turns")},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
-PyMODINIT_FUNC
-initat(void) {
+MOD_INIT(at)
+{
+#if PY_MAJOR_VERSION >= 3
+    static struct PyModuleDef moduledef = {
+	PyModuleDef_HEAD_INIT,
+	"at",			/* m_name */
+	PyDoc_STR("Clone of atpass in Accelerator Toolbox"),      /* m_doc */
+	-1,             /* m_size */
+	AtMethods,		/* m_methods */
+	NULL,			/* m_reload */
+	NULL,			/* m_traverse */
+	NULL,			/* m_clear */
+	NULL,			/* m_free */
+    };
+    PyObject *m = PyModule_Create(&moduledef);
+#else
+    PyObject *m = Py_InitModule3("at", AtMethods,
+        "Clone of atpass in Accelerator Toolbox");
+#endif
+    if (m == NULL)
+       return MOD_ERROR_VAL;
     import_array();
-    (void) Py_InitModule("at", AtMethods);
+    return MOD_SUCCESS_VAL(m);
 }
 
-
+#if PY_MAJOR_VERSION < 3
 int main(int argc, char *argv[]) {
     /* Pass argv[0] to the Python interpreter */
     Py_SetProgramName(argv[0]);
@@ -170,4 +204,4 @@ int main(int argc, char *argv[]) {
     initat();
     return 0;
 }
-
+#endif

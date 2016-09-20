@@ -1,6 +1,8 @@
 #ifndef AT_H
 #define AT_H
 
+#include <math.h>
+
 #ifdef MATLAB_MEX_FILE
 
 #include "mex.h"
@@ -8,7 +10,6 @@
 
 #else
 
-#include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -26,6 +27,7 @@ static const double pinf = 1.0 / 0.0;
 #define mxGetNaN() (NAN)
 #define mxGetInf() (INFINITY)
 #define mxMalloc malloc
+#define mxCalloc calloc
 #define mxFree free
 
 #if defined __SUNPRO_C

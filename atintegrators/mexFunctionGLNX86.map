@@ -9,7 +9,6 @@ MEX {
 	global:
 		mexFunction;
         passFunction;
-        atpyPass;
 		trackFunction;
 #		mexVersion;
 	local:

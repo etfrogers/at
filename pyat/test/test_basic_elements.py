@@ -25,9 +25,9 @@ def test_incorrect_dimensions_raises_value_error():
     rin = numpy.array(numpy.zeros((1,7)))
     with pytest.raises(ValueError):
         at.atpass(l, rin, 1)
-    rin = numpy.array(numpy.zeros((6,)))
-    with pytest.raises(ValueError):
-        at.atpass(l, rin, 1)
+    # rin = numpy.array(numpy.zeros((6,)))
+    # with pytest.raises(ValueError):
+    #     at.atpass(l, rin, 1)
 
 
 def test_marker(rin):

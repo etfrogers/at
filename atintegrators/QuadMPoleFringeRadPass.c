@@ -34,8 +34,7 @@ void QuadMPoleFringeRadPass(double *r, double le, const double *A, const double 
     double inFringe; 	/*  for linear fringe field, from elegant.
      * The argument inFringe is a flag:
      * -1 for going into the magnet and +1 for going out. */
-    int i, j;
-    
+
     for (c = 0;c<num_particles;c++) {	/*Loop over particles  */
         r6 = r+c*6;
         if (!mxIsNaN(r6[0])) {

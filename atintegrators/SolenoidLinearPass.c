@@ -6,7 +6,6 @@
 
 #include "at.h"
 #include "atlalib.c"
-#include <math.h>
 
 
 void SolenoidLinearPass(double *r_in, double le, double ks, double *T1, double *T2, double *R1, double *R2, int num_particles)
@@ -91,6 +90,8 @@ void SolenoidLinearPass(double *r_in, double le, double ks, double *T1, double *
 
 
 #ifdef MATLAB_MEX_FILE
+
+#include "elempass.h"
 
 ExportMode int* passFunction(const mxArray *ElemData,int *FieldNumbers,
 				double *r_in, int num_particles, int mode)

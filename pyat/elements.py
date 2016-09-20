@@ -32,14 +32,17 @@ class Drift(Element):
 
 class Magnet(Element):
     def __init__(self, name, length, **kwargs):
+        mxo = kwargs.setdefault('MaxOrder',3)
+        kwargs.setdefault('PolynomB', numpy.zeros(mxo + 1))
+        kwargs.setdefault('PolynomA', numpy.zeros(mxo + 1))
+        kwargs.setdefault('NumIntSteps', 10)
         super(Magnet, self).__init__(name, length, **kwargs)
-        self.PolynomA = numpy.array([0, 0, 0, 0])
-        self.PolynomB = numpy.array([0, 0, 0, 0])
 
 
 class Quadrupole(Magnet):
     def __init__(self, name, length, k1, **kwargs):
         kwargs.setdefault('PassMethod', 'QuadLinearPass')
+        kwargs.setdefault('MaxOrder', 1)
         super(Quadrupole, self).__init__(name, length, **kwargs)
         self.PolynomB[1] = k1
 
@@ -47,5 +50,6 @@ class Quadrupole(Magnet):
 class Sextupole(Magnet):
     def __init__(self, name, length, k2, **kwargs):
         kwargs.setdefault('PassMethod', 'StrMPoleSymplectic4Pass')
+        kwargs.setdefault('MaxOrder', 2)
         super(Sextupole, self).__init__(name, length, **kwargs)
         self.PolynomB[2] = k2

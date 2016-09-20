@@ -17,6 +17,9 @@
 
 #define SQR(X) ((X)*(X))
 
+#define TWOPI     6.28318530717959
+#define CGAMMA    8.846056192e-05
+
 void edge(double* r, double inv_rho, double edge_angle);
 void edge_fringe(double* r, double inv_rho, double edge_angle, double fint, double gap);
 void edge_fringe2A(double* r, double inv_rho, double edge_angle, double fint, double gap,double h1,double K1);
@@ -111,9 +114,6 @@ Note: in the US convention the transverse multipole field is written as:
 	double ReSum = B[max_order];	
 	double x ,xpr, y, ypr, p_norm,dp_0, B2P;
 
-	#define TWOPI		6.28318530717959
-	#define CGAMMA 	8.846056192e-05 
-	
 	double CRAD = CGAMMA*E0*E0*E0/(TWOPI*1e27);	/* [m]/[GeV^3] M.Sands (4.1) */
 	
   	/* recursively calculate the local transvrese magnetic field
@@ -151,7 +151,7 @@ Note: in the US convention the transverse multipole field is written as:
 
 }
 
-static void bndthinkickrad(double* r, double* A, double* B, double L, double irho, double E0,int max_order)
+static void bndthinkickrad(double* r, double* A, double* B, double L, double h, double E0,int max_order)
 /*****************************************************************************
 (1) PolynomA is neglected.
 (2) The vector potential is expanded up to 4th order of x and y. 
@@ -162,32 +162,20 @@ static void bndthinkickrad(double* r, double* A, double* B, double L, double irh
  	double ImSum = 0; /*A[max_order];*/
 
 	double ReSumTemp;
-	double K1,K2,K3,h;
-	double x ,xpr, y, ypr, p_norm,dp_0, B2P;
- 
-#define TWOPI		6.28318530717959
-#define CGAMMA 	8.846056192e-05 
-	
+	double K1,K2;
+	double x ,xpr, y, ypr, p_norm, B2P;
+
 	double CRAD = CGAMMA*E0*E0*E0/(TWOPI*1e27);	/* [m]/[GeV^3] M.Sands (4.1) */
 
 	K1 = B[1]; 
-	if (max_order>=2)
-	 K2=B[2]; 
-	else
-	 K2=0;
-	 
-	if (max_order>=3)
-	 K3=B[3];
-	else
-	 K3=0;
-	 h=irho;
+	K2 = (max_order>=2) ? B[2] : 0;
 
-  ReSum = B[max_order];
-	for(i=max_order-1;i>=0;i--)
-		{	ReSumTemp = ReSum*r[0] - ImSum*r[2] + B[i];
-			ImSum = ImSum*r[0] +  ReSum*r[2] ;
-			ReSum = ReSumTemp;
-		}
+    ReSum = B[max_order];
+	for(i=max_order-1;i>=0;i--) {
+	    ReSumTemp = ReSum*r[0] - ImSum*r[2] + B[i];
+        ImSum = ImSum*r[0] +  ReSum*r[2] ;
+        ReSum = ReSumTemp;
+    }
 	
 		/* calculate angles from momentums 	*/
 	p_norm = 1/(1+r[4]);
@@ -200,10 +188,9 @@ static void bndthinkickrad(double* r, double* A, double* B, double L, double irh
 	ImSum += h*(K1*h-K2)*y*y*y/6.0;
 	ReSum += -K1*h*y*y/2.0 + h*(K1*h-K2)*x*y*y/2.0;
 
-	B2P = B2perp(ImSum, ReSum +irho, irho, x , xpr, y ,ypr);
+	B2P = B2perp(ImSum, ReSum +h, h, x , xpr, y ,ypr);
 
-	dp_0 = r[4];
-	r[4] = r[4] - CRAD*SQR(1+r[4])*B2P*(1 + x*irho + (SQR(xpr)+SQR(ypr))/2 )*L;
+	r[4] = r[4] - CRAD*SQR(1+r[4])*B2P*(1 + x*h + (SQR(xpr)+SQR(ypr))/2 )*L;
 
 	/* recalculate momentums from angles after losing energy for radiation 	*/
 	p_norm = 1/(1+r[4]);
@@ -224,7 +211,7 @@ static void ATbendhxdrift6(double* r, double L,double h)
 {
 	double hs = h*L;
 	double i1pd = 1.0/(1+r[4]);
-	double x=r[0],px=r[1],y=r[2],py=r[3];
+	double x=r[0],px=r[1],py=r[3];
 
 	r[0] += (1+h*x)*px*i1pd*L+1/4.*hs*L*(px*px-py*py)*i1pd*i1pd; /* (1.0/h+x)*((1.0+hs*px*i1pd/2.)*(1.0+hs*px*i1pd/2.)-(hs*py*i1pd/2.)*(hs*py*i1pd/2.))-1./h;*/
 	r[1] -= hs*(px*px+py*py)*i1pd/2.0;
