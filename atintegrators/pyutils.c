@@ -24,7 +24,9 @@ static long py_get_long(PyObject *element, char *name, bool optional) {
             PyErr_Clear();
             return 0;
         } else {
-            PyErr_SetString(PyExc_AttributeError, "Element missing required integer attribute.");
+            char *error_template = "Element missing required integer attribute: %s";
+            char error[50];
+            PyErr_SetString(PyExc_AttributeError, error);
         }
     }
     return l;
@@ -40,7 +42,10 @@ static double py_get_double(PyObject *element, char *name, bool optional) {
             PyErr_Clear();
             return 0;
         } else {
-            PyErr_SetString(PyExc_AttributeError, "Element missing required double attribute.");
+            char *error_template = "Element missing required double attribute: %s";
+            char error[50];
+            snprintf(error, sizeof(error), error_template, name);
+            PyErr_SetString(PyExc_AttributeError, error);
         }
     }
     return d;
