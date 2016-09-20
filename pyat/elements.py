@@ -11,13 +11,13 @@ class Element(object):
 
 
 class Marker(Element):
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, length, **kwargs):
         kwargs.setdefault('PassMethod', 'IdentityPass')
-        super(Marker, self).__init__(name, **kwargs)
+        super(Marker, self).__init__(name, length, **kwargs)
 
 
 class Aperture(Element):
-    def __init__(self, name, limits, **kwargs):
+    def __init__(self, name, limits=[0,0,0,0], **kwargs):
         assert len(limits) == 4
         kwargs.setdefault('PassMethod', 'AperturePass')
         super(Aperture, self).__init__(name, **kwargs)
@@ -33,19 +33,27 @@ class Drift(Element):
 class Magnet(Element):
     def __init__(self, name, length, **kwargs):
         super(Magnet, self).__init__(name, length, **kwargs)
-        self.PolynomA = numpy.array([0, 0, 0, 0])
-        self.PolynomB = numpy.array([0, 0, 0, 0])
+        poly_a = kwargs.get('PolynomA', numpy.array([0, 0, 0, 0]))
+        poly_b = kwargs.get('PolynomB', numpy.array([0, 0, 0, 0]))
+        self.PolynomA = numpy.array(poly_a, dtype=numpy.float64)
+        self.PolynomB = numpy.array(poly_b, dtype=numpy.float64)
+        self.MaxOrder = 3
+        self.NumIntSteps = 10
+
+
+class Dipole(Magnet):
+    def __init__(self, name, length, **kwargs):
+        kwargs.setdefault('PassMethod', 'BndMPoleSymplectic4E2Pass')
+        super(Dipole, self).__init__(name, length, **kwargs)
 
 
 class Quadrupole(Magnet):
-    def __init__(self, name, length, k1, **kwargs):
+    def __init__(self, name, length, **kwargs):
         kwargs.setdefault('PassMethod', 'QuadLinearPass')
         super(Quadrupole, self).__init__(name, length, **kwargs)
-        self.PolynomB[1] = k1
 
 
 class Sextupole(Magnet):
-    def __init__(self, name, length, k2, **kwargs):
+    def __init__(self, name, length, **kwargs):
         kwargs.setdefault('PassMethod', 'StrMPoleSymplectic4Pass')
         super(Sextupole, self).__init__(name, length, **kwargs)
-        self.PolynomB[2] = k2
