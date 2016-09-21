@@ -76,17 +76,17 @@ static double *numpy_get_double_array(PyObject *element, char *name, bool option
     if (!PyArray_Check(array)) {
         printf("%s not an array\n", name);
         PyErr_SetString(PyExc_RuntimeError, "Attribute not a numpy array.");
-        array = NULL;
+        return NULL;
     }
     if (PyArray_TYPE(array) != NPY_DOUBLE) {
         printf("%s not double\n", name);
         PyErr_SetString(PyExc_RuntimeError, "Attribute not a double array.");
-        array = NULL;
+        return NULL;
     }
     if ((PyArray_FLAGS(array) & NPY_ARRAY_CARRAY_RO) != NPY_ARRAY_CARRAY_RO) {
         printf("%s not C aligned\n", name);
         PyErr_SetString(PyExc_RuntimeError, "Attribute array not C-aligned.");
-        array = NULL;
+        return NULL;
     }
     return PyArray_DATA(array);
 }
