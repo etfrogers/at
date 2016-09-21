@@ -10,6 +10,14 @@ def rin():
     return rin
 
 
+def test_correct_dimensions_does_not_raise_error(rin):
+    l = []
+    at.atpass(l, rin, 1)
+    rin = numpy.zeros((6,))
+    at.atpass(l, rin, 1)
+    rin = numpy.zeros((2,6))
+
+
 def test_incorrect_types_raises_value_error(rin):
     l = []
     with pytest.raises(ValueError):
@@ -25,13 +33,48 @@ def test_incorrect_dimensions_raises_value_error():
     rin = numpy.array(numpy.zeros((1,7)))
     with pytest.raises(ValueError):
         at.atpass(l, rin, 1)
-    # rin = numpy.array(numpy.zeros((6,)))
-    # with pytest.raises(ValueError):
-    #     at.atpass(l, rin, 1)
+    rin = numpy.array(numpy.zeros((6,1)))
+    with pytest.raises(ValueError):
+        at.atpass(l, rin, 1)
+
+
+def test_fortran_aligned_array_raises_value_error():
+    rin = numpy.asfortranarray(numpy.zeros((2,6)))
+    l = []
+    with pytest.raises(ValueError):
+        at.atpass(l, rin, 1)
+
+
+def test_missing_pass_method_raises_attribute_error(rin):
+    m = elements.Marker('marker', 0)
+    l = [m]
+    del m.PassMethod
+    with pytest.raises(AttributeError):
+        at.atpass(l, rin, 1)
+
+
+def test_missing_length_raises_attribute_error(rin):
+    m = elements.Drift('drift', 1.0)
+    l = [m]
+    del m.Length
+    with pytest.raises(AttributeError):
+        at.atpass(l, rin, 1)
+
+
+def test_dipole(rin):
+    print(elements.__file__)
+    b = elements.Dipole('bend', 1.0, BendingAngle=0.1,
+                        EntranceAngle=0.05, ExitAngle=0.05)
+    l = [b]
+    rin[0,0] = 1e-6
+    rin_orig = numpy.copy(rin)
+    at.atpass(l, rin, 1)
+    rin_expected = numpy.array([1e-6, 0, 0, 0, 0, 1e-7]).reshape((1,6))
+    numpy.testing.assert_almost_equal(rin_orig, rin_expected)
 
 
 def test_marker(rin):
-    m = elements.Marker('marker')
+    m = elements.Marker('marker', 0)
     assert m.name == 'marker'
     assert m.Length == 0
     lattice = [m]
