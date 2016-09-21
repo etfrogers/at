@@ -31,6 +31,7 @@ static long py_get_long(PyObject *element, char *name, bool optional) {
         } else {
             char *error_template = "Element missing required integer attribute: %s";
             char error[50];
+            snprintf(error, sizeof(error), error_template, name);
             PyErr_SetString(PyExc_AttributeError, error);
         }
     }
