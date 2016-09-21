@@ -18,4 +18,4 @@ at = Extension('at', sources=['at.c'],
                define_macros=macros,
                include_dirs=[numpy.get_include(), '../atintegrators'])
 
-setup(name='at', py_modules=['elements'], ext_modules=[at])
+setup(name='at', py_modules=['elements','load_mat'], ext_modules=[at])
