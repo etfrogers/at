@@ -1,0 +1,19 @@
+cmake_minimum_required (VERSION 2.8)
+project (pyat)
+# The version number.
+set (pyat_VERSION_MAJOR 1)
+set (pyat_VERSION_MINOR 0)
+
+find_package(PythonLibs 2.7 REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+include(FindNumpy.cmake)
+
+set(BUILD_SHARED_LIBS ON)
+set(CMAKE_C_FLAGS "-DPYAT")
+#add_executable(AperturePass AperturePass.c)
+add_library(AperturePass SHARED AperturePass.c)
+add_library(BndMPoleSymplectic4E2Pass SHARED BndMPoleSymplectic4E2Pass.c)
+add_library(DriftPass SHARED DriftPass.c)
+add_library(IdentityPass SHARED IdentityPass.c)
+add_library(StrMPoleSymplectic4Pass SHARED StrMPoleSymplectic4Pass.c)
+install(TARGETS AperturePass DESTINATION build)
