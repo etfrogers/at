@@ -7,7 +7,7 @@ set (pyat_VERSION_MINOR 0)
 find_package(PythonLibs 2.7 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 include(FindNumpy.cmake)
-
+include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
 set(BUILD_SHARED_LIBS ON)
 set(CMAKE_C_FLAGS "-DPYAT")
 #add_executable(AperturePass AperturePass.c)
