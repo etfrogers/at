@@ -156,7 +156,6 @@ void StrMPoleSymplectic4Pass(double *r, double le, double *A, double *B,
 
 #ifdef PYAT
 
-#include "pyutils.c"
 
 int atpyPass(double *rin, int num_particles, PyObject *element, struct parameters *param)
 {

@@ -35,8 +35,6 @@ void IdentityPass(double *r_in,
 
 #ifdef PYAT
 
-#include "pyutils.c"
-
 int atpyPass(double *rin, int num_particles, PyObject *element, struct parameters *param)
 {
     double *t1 = numpy_get_double_array(element, "T1", true);     /* Optional arguments */

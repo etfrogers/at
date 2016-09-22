@@ -1,4 +1,3 @@
-#include <math.h>
 #include "at.h"
 
 static void markaslost(double *r6,int idx)
@@ -26,7 +25,6 @@ void AperturePass(double *r_in, double *limits, int num_particles)
 
 #ifdef PYAT
 
-#include "pyutils.c"
 
 int atpyPass(double *rin, int num_particles, PyObject *element, struct parameters *param)
 {

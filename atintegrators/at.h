@@ -1,6 +1,12 @@
 #ifndef AT_H
 #define AT_H
 
+#ifdef PYAT
+
+#include "pyutils.c"
+
+#endif /*PYAT*/
+
 #include <math.h>
 
 #ifdef MATLAB_MEX_FILE

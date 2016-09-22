@@ -65,7 +65,7 @@ static pass_function pass_method(char *fn_name) {
     }
     else {
         char *lib_file = malloc(sizeof(char) * 1000);
-        sprintf(lib_file, "%s/%s.so", INTEGRATOR_PATH, fn_name);
+        sprintf(lib_file, "%s/lib%s.so", INTEGRATOR_PATH, fn_name);
         void *dl_handle = dlopen(lib_file, RTLD_LAZY);
         free((void *)lib_file);
         if (dl_handle == NULL) {

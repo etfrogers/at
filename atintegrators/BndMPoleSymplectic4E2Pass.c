@@ -269,8 +269,6 @@ void BndMPoleSymplectic4E2Pass(double *r, double le, double irho, double *A, dou
 
 #ifdef PYAT
 
-#include "pyutils.c"
-
 int atpyPass(double *rin, int num_particles, PyObject *element, struct parameters *param)
 {
     double length = py_get_double(element, "Length", false);
