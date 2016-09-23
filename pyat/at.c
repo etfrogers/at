@@ -64,10 +64,9 @@ static pass_function pass_method(char *fn_name) {
         fn_handle = LibraryListPtr->FunctionHandle;
     }
     else {
-        char *lib_file = malloc(sizeof(char) * 1000);
-        sprintf(lib_file, "%s/%s.so", INTEGRATOR_PATH, fn_name);
+        char lib_file[300];
+        snprintf(lib_file, sizeof(lib_file), "%s/%s.so", INTEGRATOR_PATH, fn_name);
         void *dl_handle = dlopen(lib_file, RTLD_LAZY);
-        free((void *)lib_file);
         if (dl_handle == NULL) {
             PyErr_SetString(PyExc_RuntimeError, dlerror());
             return NULL;
@@ -149,7 +148,7 @@ static PyObject *at_atpass(PyObject *self, PyObject *args) {
                 char *pass_error_template = "Error occurred during pass method for element %d";
                 if (!PyErr_Occurred()) {
                     char pass_error[50];
-                    sprintf(pass_error, pass_error_template, j);
+                    snprintf(pass_error, sizeof(pass_error), pass_error_template, j);
                     PyErr_SetString(PyExc_RuntimeError, pass_error);
                 } else {
                     printf(pass_error_template, j);
