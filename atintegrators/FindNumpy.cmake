@@ -1,3 +1,4 @@
+# This was copied from https://github.com/Eyescale/CMake
 # Find the Python NumPy package
 # PYTHON_NUMPY_INCLUDE_DIR
 # PYTHON_NUMPY_FOUND
