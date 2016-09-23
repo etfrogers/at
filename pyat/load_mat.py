@@ -33,8 +33,9 @@ def load_element(element_array):
     kwargs = extract_scalars(kwargs)
     class_name = kwargs.pop('Class')
     cl = getattr(elements, class_name)
-    length = kwargs.pop('Length')
-    element = cl('name', length, **kwargs)
+    # Remove mandatory attributes from the keyword arguments.
+    args = [kwargs.pop(attr) for attr in cl.REQUIRED_ATTRIBUTES]
+    element = cl(*args, **kwargs)
     return element
 
 
