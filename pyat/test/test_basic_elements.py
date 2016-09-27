@@ -46,7 +46,7 @@ def test_fortran_aligned_array_raises_value_error():
 
 
 def test_missing_pass_method_raises_attribute_error(rin):
-    m = elements.Marker('marker', 0)
+    m = elements.Marker('marker')
     l = [m]
     del m.PassMethod
     with pytest.raises(AttributeError):
@@ -63,8 +63,7 @@ def test_missing_length_raises_attribute_error(rin):
 
 def test_dipole(rin):
     print(elements.__file__)
-    b = elements.Dipole('bend', 1.0, BendingAngle=0.1,
-                        EntranceAngle=0.05, ExitAngle=0.05)
+    b = elements.Dipole('dipole', 1.0, 0.1, 0.05, 0.05)
     l = [b]
     rin[0,0] = 1e-6
     rin_orig = numpy.copy(rin)
@@ -74,8 +73,7 @@ def test_dipole(rin):
 
 
 def test_marker(rin):
-    m = elements.Marker('marker', 0)
-    assert m.name == 'marker'
+    m = elements.Marker('marker')
     assert m.Length == 0
     lattice = [m]
     rin = numpy.random.rand(*rin.shape)
@@ -86,7 +84,6 @@ def test_marker(rin):
 
 def test_aperture_inside_limits(rin):
     a = elements.Aperture('aperture', [-1e-3, 1e-3, -1e-4, 1e-4])
-    assert a.name == 'aperture'
     assert a.Length == 0
     lattice = [a]
     rin[0][0] = 1e-5
@@ -98,7 +95,6 @@ def test_aperture_inside_limits(rin):
 
 def test_aperture_outside_limits(rin):
     a = elements.Aperture('aperture', [-1e-3, 1e-3, -1e-4, 1e-4])
-    assert a.name == 'aperture'
     assert a.Length == 0
     lattice = [a]
     rin[0][0] = 1e-2
@@ -120,7 +116,6 @@ def test_drift_offset(rin):
 
 def test_drift_divergence(rin):
     d = elements.Drift('drift', 1.0)
-    assert d.name == 'drift'
     assert d.Length == 1
     lattice = [d]
     rin[0][1] = 1e-6
@@ -133,7 +128,6 @@ def test_drift_divergence(rin):
 
 def test_drift_two_particles(rin):
     d = elements.Drift('drift', 1.0)
-    assert d.name == 'drift'
     assert d.Length == 1
     lattice = [d]
     two_rin = numpy.concatenate((rin, rin), axis=0)
