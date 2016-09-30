@@ -41,19 +41,19 @@ static double* atGetDoubleArray(const mxArray *ElemData, const char *fieldname)
 static long atGetOptionalLong(const mxArray *ElemData, const char *fieldname, long default_value)
 {
     mxArray *field=mxGetField(ElemData,0,fieldname);
-    return (field) ? (long)mxGetScalar(field) : default_value
+    return (field) ? (long)mxGetScalar(field) : default_value;
 }
 
 static double atGetOptionalDouble(const mxArray *ElemData, const char *fieldname, double default_value)
 {
     mxArray *field=mxGetField(ElemData,0,fieldname);
-    return (field) ? mxGetScalar(field) : default_value
+    return (field) ? mxGetScalar(field) : default_value;
 }
 
 static double* atGetOptionalDoubleArray(const mxArray *ElemData, const char *fieldname)
 {
     mxArray *field=mxGetField(ElemData,0,fieldname);
-    return (field) ? mxGetPr(field) : NULL
+    return (field) ? mxGetPr(field) : NULL;
 }
 
 static void *atMalloc(size_t size)
@@ -229,7 +229,6 @@ struct elem;
 
 struct parameters
 {
-  int mode;
   int nturn;
   double RingLength;
   double T0;
