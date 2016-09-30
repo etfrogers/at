@@ -10,41 +10,50 @@
 #include <matrix.h>
 
 typedef mxArray atElem;
-#define err_occurred() (0)
+#define check_error()
 #define atIsFinite mxIsFinite
 #define atIsNaN mxIsNaN
 #define atGetNaN mxGetNaN
 #define atGetInf mxGetInf
 #define atFree mxFree
 
-static int atGetLong(const mxArray *ElemData, const char *fieldname, int defaultValue)
+static long atGetLong(const mxArray *ElemData, const char *fieldname)
 {
-    mxArray *field;
-    if(field=mxGetField(ElemData,0,fieldname))
-        return (int)mxGetScalar(field);
-    else
-        return defaultValue;
+    mxArray *field=mxGetField(ElemData,0,fieldname);
+    if (!field) mexErrMsgIdAndTxt("AT:WrongArg", "The required attribute %s is missing.", fieldname);
+    return (long)mxGetScalar(field);
 }
 
-static double atGetDouble(const mxArray *ElemData, const char *fieldname, double defaultValue)
+static double atGetDouble(const mxArray *ElemData, const char *fieldname)
 {
-    mxArray *field;
-    if (field=mxGetField(ElemData,0,fieldname))
-        return mxGetScalar(field);
-    else
-        return defaultValue;
+    mxArray *field=mxGetField(ElemData,0,fieldname);
+    if (!field) mexErrMsgIdAndTxt("AT:WrongArg", "The required attribute %s is missing.", fieldname);
+    return mxGetScalar(field);
 }
 
-static double* atGetDoubleArray(const mxArray *ElemData, const char *fieldname, int optional)
+static double* atGetDoubleArray(const mxArray *ElemData, const char *fieldname)
 {
-    mxArray *field;
-    if (field=mxGetField(ElemData,0,fieldname))
-        return mxGetPr(field);
-    else
-        if (optional)
-            return NULL;
-        else
-            mexErrMsgTxt("The required attribute %s is missing.", fieldname);
+    mxArray *field=mxGetField(ElemData,0,fieldname);
+    if (!field) mexErrMsgIdAndTxt("AT:WrongArg", "The required attribute %s is missing.", fieldname);
+    return mxGetPr(field);
+}
+
+static long atGetOptionalLong(const mxArray *ElemData, const char *fieldname, long default_value)
+{
+    mxArray *field=mxGetField(ElemData,0,fieldname);
+    return (field) ? (long)mxGetScalar(field) : default_value
+}
+
+static double atGetOptionalDouble(const mxArray *ElemData, const char *fieldname, double default_value)
+{
+    mxArray *field=mxGetField(ElemData,0,fieldname);
+    return (field) ? mxGetScalar(field) : default_value
+}
+
+static double* atGetOptionalDoubleArray(const mxArray *ElemData, const char *fieldname)
+{
+    mxArray *field=mxGetField(ElemData,0,fieldname);
+    return (field) ? mxGetPr(field) : NULL
 }
 
 static void *atMalloc(size_t size)
@@ -66,6 +75,7 @@ static void *atCalloc(size_t count, size_t size)
 #include <Python.h>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 #if PY_MAJOR_VERSION >= 3
@@ -76,7 +86,6 @@ static void *atCalloc(size_t count, size_t size)
 #define NUMPY_IMPORT_ARRAY_TYPE void
 #define PyLong_AsLong PyInt_AsLong
 #endif
-#include <stdlib.h>
 
 #ifndef NAN
 static const double dnan = 0.0 / 0.0;
@@ -88,7 +97,7 @@ static const double pinf = 1.0 / 0.0;
 #endif
 
 typedef PyObject atElem;
-#define err_occurred PyErr_Occurred
+#define check_error() if (PyErr_Occurred()) return NULL
 #define atIsFinite isfinite
 #define atIsNaN isnan
 #define atGetNaN() (NAN)
@@ -109,7 +118,10 @@ static NUMPY_IMPORT_ARRAY_TYPE init_numpy(void) {
     return NUMPY_IMPORT_ARRAY_RETVAL;
 }
 
-static long atGetLong(const PyObject *element, char *name, long default_value) {
+#define atGetLong(elem,fname) PyLong_AsLong(PyObject_GetAttrString((PyObject *)elem, fname))
+#define atGetDouble(elem, fname) PyFloat_AsDouble(PyObject_GetAttrString((PyObject *)elem, fname))
+
+static long atGetOptionalLong(const PyObject *element, char *name, long default_value) {
     long l = PyLong_AsLong(PyObject_GetAttrString((PyObject *)element, name));
     if (PyErr_Occurred()) {
         PyErr_Clear();
@@ -118,7 +130,7 @@ static long atGetLong(const PyObject *element, char *name, long default_value) {
     return l;
 }
 
-static double atGetDouble(const PyObject *element, char *name, double default_value) {
+static double atGetOptionalDouble(const PyObject *element, char *name, double default_value) {
     double d = PyFloat_AsDouble(PyObject_GetAttrString((PyObject *)element, name));
     if (PyErr_Occurred()) {
         PyErr_Clear();
@@ -127,7 +139,7 @@ static double atGetDouble(const PyObject *element, char *name, double default_va
     return d;
 }
 
-static double *atGetDoubleArray(const PyObject *element, char *name, bool optional) {
+static double *atGetDoubleArray(const PyObject *element, char *name) {
     char errmessage[60];
     if (!array_imported) {
         init_numpy();
@@ -135,9 +147,6 @@ static double *atGetDoubleArray(const PyObject *element, char *name, bool option
     }
     PyArrayObject *array = (PyArrayObject *) PyObject_GetAttrString((PyObject *)element, name);
     if (array == NULL) {
-        if (optional) {
-            PyErr_Clear();
-        }
         return NULL;
     }
     if (!PyArray_Check(array)) {
@@ -158,7 +167,63 @@ static double *atGetDoubleArray(const PyObject *element, char *name, bool option
     return PyArray_DATA(array);
 }
 
-#endif /*PYAT*/
+static double *atGetOptionalDoubleArray(const PyObject *element, char *name) {
+    char errmessage[60];
+    if (!array_imported) {
+        init_numpy();
+        array_imported = 1;
+    }
+    PyArrayObject *array = (PyArrayObject *) PyObject_GetAttrString((PyObject *)element, name);
+    if (array == NULL) {
+        PyErr_Clear();
+        return NULL;
+    }
+    if (!PyArray_Check(array)) {
+        snprintf(errmessage, 60, "The attribute %s is not an array.", name);
+        PyErr_SetString(PyExc_RuntimeError, errmessage);
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_DOUBLE) {
+        snprintf(errmessage, 60, "The attribute %s is not a double array.", name);
+        PyErr_SetString(PyExc_RuntimeError, errmessage);
+        return NULL;
+    }
+    if ((PyArray_FLAGS(array) & NPY_ARRAY_CARRAY_RO) != NPY_ARRAY_CARRAY_RO) {
+        snprintf(errmessage, 60, "The attribute %s is not C-aligned.", name);
+        PyErr_SetString(PyExc_RuntimeError, errmessage);
+        return NULL;
+    }
+    return PyArray_DATA(array);
+}
+
+#else
+
+#include <stdlib.h>
+#include <stdbool.h>
+
+#ifndef NAN
+static const double dnan = 0.0 / 0.0;
+#define NAN dnan
+#endif
+#ifndef INFINITY
+static const double pinf = 1.0 / 0.0;
+#define INFINITY pinf
+#endif
+
+#define atIsFinite isfinite
+#define atIsNaN isnan
+#define atGetNaN() (NAN)
+#define atGetInf() (INFINITY)
+#define atMalloc malloc
+#define atCalloc calloc
+#define atFree free
+
+#if defined __SUNPRO_C
+#include <ieeefp.h>
+#define isfinite finite
+#endif
+
+#endif
 
 struct elem;
 
@@ -170,5 +235,5 @@ struct parameters
   double T0;
 };
 
-ExportMode struct elem *trackFunction2(const atElem *ElemData, struct elem *Elem,
+ExportMode struct elem *trackFunction(const atElem *ElemData, struct elem *Elem,
 			      double *r_in, int num_particles, struct parameters *Param);

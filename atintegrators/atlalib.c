@@ -153,6 +153,10 @@ static void ATaddmm(const double *M2 , double *M1)
 
 }
 
+#ifndef atGetInf
+#define atGetInf mxGetInf
+#endif
+
 static void markaslost(double *r6,int idx)
 {
     r6[idx] = atGetInf();
