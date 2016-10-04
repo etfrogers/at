@@ -65,6 +65,7 @@ class ThinMultipole(Element):
         kwargs['PolynomA'] = numpy.concatenate((poly_a, numpy.zeros(poly_size - len(poly_a))))
         kwargs['PolynomB'] = numpy.concatenate((poly_b, numpy.zeros(poly_size - len(poly_b))))
         kwargs['MaxOrder'] = int(kwargs.pop('MaxOrder', poly_size - 1))
+        kwargs.setdefault('PassMethod','ThinMPolePass')
         length = kwargs.pop('Length', 0.0)
         super(ThinMultipole, self).__init__(family_name, length, **kwargs)
 
@@ -84,6 +85,7 @@ class Multipole(ThinMultipole):
         """
         kwargs['NumIntSteps'] = int(kwargs.pop('NumIntSteps', 10))
         kwargs['Length'] = length
+        kwargs.setdefault('PassMethod','StrMPoleSymplectic4Pass')
         super(Multipole, self).__init__(family_name, poly_a, poly_b, **kwargs)
 
 
@@ -152,11 +154,11 @@ class Sextupole(Multipole):
 
 class RFCavity(Element):
     """pyAT RF cavity element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Voltage',
+    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length',
+                                                         'Voltage',
                                                          'Frequency',
                                                          'HarmNumber',
-                                                         'Energy',
-                                                         'TimeLag']
+                                                         'Energy']
 
     def __init__(self, family_name, length, voltage, frequency, harmonic_number, energy, **kwargs):
         """
