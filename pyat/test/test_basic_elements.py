@@ -77,10 +77,10 @@ def test_reuse_attributes(rin, reuse):
     # one turn with altered lattice
     at.atpass(l, rin_copy, 1, reuse=reuse)
     if reuse:
-        numpy.testing.assert_equal(rin_two_turns, rin_copy)
+        numpy.testing.assert_equal(rin, rin_copy)
     else:
         with pytest.raises(AssertionError):
-            numpy.testing.assert_equal(rin_two_turns, rin_copy)
+            numpy.testing.assert_equal(rin, rin_copy)
 
 
 @pytest.mark.parametrize("dipole_class", (elements.Dipole, elements.Bend))
