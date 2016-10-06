@@ -1,4 +1,4 @@
-#include "at.h"
+#include "atelem.c"
 #include "atlalib.c"
 #include "atphyslib.c"
 
@@ -6,6 +6,30 @@
 #define DRIFT2   -0.1756035959798286639
 #define KICK1     1.351207191959657328
 #define KICK2    -1.702414383919314656
+
+
+struct elem
+{
+    double Length;
+    double BendingAngle;
+    double EntranceAngle;
+    double ExitAngle;
+    double Gap;
+    double Fint1;
+    double Fint2;
+    double *PolynomA;
+    double *PolynomB;
+    int MaxOrder;
+    int NumIntSteps;
+    /* Optional fields */
+    double *R1;
+    double *R2;
+    double *T1;
+    double *T2;
+    double *RApertures;
+    double *EApertures;
+};
+
 
 /*
  This code was modified from the original BndMPoleSymplectic4Pass.c of AT to correctly integrate the Hamiltonian in 
@@ -203,7 +227,7 @@ void BndMPoleSymplectic4E2Pass(double *r, double le, double irho, double *A, dou
 	    
 	for(c = 0;c<num_particles;c++)	/* Loop over particles  */
 			{	r6 = r+c*6;	
-			    if(!mxIsNaN(r6[0]))
+			    if(!atIsNaN(r6[0]))
 			    {
 					
 					/*  misalignment at entrance  */
@@ -267,300 +291,53 @@ void BndMPoleSymplectic4E2Pass(double *r, double le, double irho, double *A, dou
 			}
 }
 
-#ifdef PYAT
-
-#include "pyutils.c"
-
-int atpyPass(double *rin, int num_particles, PyObject *element, struct parameters *param)
+#if defined(MATLAB_MEX_FILE) || defined(PYAT)
+ExportMode struct elem *trackFunction(const atElem *ElemData,struct elem *Elem,
+        double *r_in, int num_particles, struct parameters *Param)
 {
-    double length = py_get_double(element, "Length", false);
-    double bending_angle = py_get_double(element, "BendingAngle", false);
-    double entrance_angle = py_get_double(element, "EntranceAngle", false);
-    double exit_angle = py_get_double(element, "ExitAngle", false);
-    double gap = py_get_double(element, "FullGap", true);
-    double fint1 = py_get_double(element, "FringeInt1", true);
-    double fint2 = py_get_double(element, "FringeInt2", true);
-    long max_order = py_get_long(element, "MaxOrder", true);
-    long num_int_steps = py_get_long(element, "NumIntSteps", true);
-    double *t1 = numpy_get_double_array(element, "T1", true);
-    double *t2 = numpy_get_double_array(element, "T2", true);
-    double *r1 = numpy_get_double_array(element, "R1", true);
-    double *r2 = numpy_get_double_array(element, "R2", true);
-    double *polyA = numpy_get_double_array(element, "PolynomA", true);
-    double *polyB = numpy_get_double_array(element, "PolynomB", true);
-    double irho = bending_angle / length;
-    if (PyErr_Occurred()) {
-        return -1;
-    } else {
-        BndMPoleSymplectic4E2Pass(rin, length, irho, polyA, polyB, max_order, num_int_steps, entrance_angle, exit_angle, fint1, fint2, gap, 0, 0, t1, t2, r1, r2, num_particles);
-    return 0;
+    if (!Elem) {
+        double Length=atGetDouble(ElemData,"Length"); check_error();
+        double BendingAngle=atGetDouble(ElemData,"BendingAngle"); check_error();
+        double EntranceAngle=atGetDouble(ElemData,"EntranceAngle"); check_error();
+        double ExitAngle=atGetDouble(ElemData,"ExitAngle"); check_error();
+        double *PolynomA=atGetDoubleArray(ElemData,"PolynomA"); check_error();
+        double *PolynomB=atGetDoubleArray(ElemData,"PolynomB"); check_error();
+        int MaxOrder=atGetLong(ElemData,"MaxOrder"); check_error();
+        int NumIntSteps=atGetLong(ElemData,"NumIntSteps"); check_error();
+        /*optional fields*/
+        double Gap=atGetOptionalDouble(ElemData,"Gap", 0); check_error();
+        double Fint1=atGetOptionalDouble(ElemData,"Fint1", 0); check_error();
+        double Fint2=atGetOptionalDouble(ElemData,"Fint2", 0); check_error();
+        double *R1=atGetOptionalDoubleArray(ElemData,"R1"); check_error();
+        double *R2=atGetOptionalDoubleArray(ElemData,"R2"); check_error();
+        double *T1=atGetOptionalDoubleArray(ElemData,"T1"); check_error();
+        double *T2=atGetOptionalDoubleArray(ElemData,"T2"); check_error();
+        Elem = (struct elem*)atMalloc(sizeof(struct elem));
+        Elem->Length=Length;
+        Elem->BendingAngle=BendingAngle;
+        Elem->EntranceAngle=EntranceAngle;
+        Elem->ExitAngle=ExitAngle;
+        Elem->Gap=Gap;
+        Elem->Fint1=Fint1;
+        Elem->Fint2=Fint2;
+        Elem->PolynomA=PolynomA;
+        Elem->PolynomB=PolynomB;
+        Elem->MaxOrder=MaxOrder;
+        Elem->NumIntSteps=NumIntSteps;
+        /*optional fields*/
+        Elem->R1=R1;
+        Elem->R2=R2;
+        Elem->T1=T1;
+        Elem->T2=T2;
     }
+    double irho = Elem->BendingAngle / Elem->Length;
+    BndMPoleSymplectic4E2Pass(r_in, Elem->Length, irho, Elem->PolynomA, Elem->PolynomB, Elem->MaxOrder, Elem->NumIntSteps, Elem->EntranceAngle, Elem->ExitAngle, Elem->Fint1, Elem->Fint2, Elem->Gap, 0, 0, Elem->T1, Elem->T2, Elem->R1, Elem->R2, num_particles);
+    return Elem;
 }
 
-#endif /*PYAT*/
+#endif /*MATLAB_MEX_FILE || PYAT*/
 
 #ifdef MATLAB_MEX_FILE
-
-#include "elempass.h"
-
-ExportMode int* passFunction(const mxArray *ElemData, int *FieldNumbers,
-								double *r_in, int num_particles, int mode)
-
-#define NUM_FIELDS_2_REMEMBER 17
-
-
-{	double *A , *B;
-	double  *pr1, *pr2, *pt1, *pt2, fint1, fint2, gap,h1,h2;   
-	double entrance_angle, exit_angle;
-
-	int max_order, num_int_steps;
-	double le,ba,irho;
-	int *returnptr;
-	int *NewFieldNumbers, fnum;
-
-	
-	switch(mode)
-		{   case MAKE_LOCAL_COPY: 	/* Find field numbers first
-										Save a list of field number in an array
-										and make returnptr point to that array
-									*/
-				{	
-					/* Allocate memory for integer array of 
-					    field numbers for faster future reference
-					*/
-		
-					NewFieldNumbers = (int*)mxCalloc(NUM_FIELDS_2_REMEMBER,sizeof(int));
-
-					/* Populate */
-					
-					
-					
-					fnum = mxGetFieldNumber(ElemData,"PolynomA");
-					if(fnum<0) 
-					  /*  mexErrMsgTxt("Required field 'PolynomA' was not found in the element data structure");*/
-					  A =NULL;
-					else
-					{
-						NewFieldNumbers[0] = fnum;
-						A = mxGetPr(mxGetFieldByNumber(ElemData,0,fnum));
-					}
-					
-					fnum = mxGetFieldNumber(ElemData,"PolynomB");
-					if(fnum<0) 
-					    mexErrMsgTxt("Required field 'PolynomB' was not found in the element data structure"); 
-					NewFieldNumbers[1] = fnum;
-					B = mxGetPr(mxGetFieldByNumber(ElemData,0,fnum));
-					
-					
-					
-					fnum = mxGetFieldNumber(ElemData,"MaxOrder");
-					if(fnum<0) 
-					    mexErrMsgTxt("Required field 'MaxOrder' was not found in the element data structure"); 
-					NewFieldNumbers[2] = fnum;
-					max_order = (int)mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-					
-					fnum = mxGetFieldNumber(ElemData,"NumIntSteps");
-					if(fnum<0) 
-					    mexErrMsgTxt("Required field 'NumIntSteps' was not found in the element data structure"); 
-					NewFieldNumbers[3] = fnum;
-					num_int_steps = (int)mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-					
-					
-					fnum = mxGetFieldNumber(ElemData,"Length");
-					if(fnum<0) 
-					    mexErrMsgTxt("Required field 'Length' was not found in the element data structure"); 
-					NewFieldNumbers[4] = fnum;
-					le = mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-					
-					
-					fnum = mxGetFieldNumber(ElemData,"BendingAngle");
-					if(fnum<0) 
-					    mexErrMsgTxt("Required field 'BendingAngle' was not found in the element data structure"); 
-					NewFieldNumbers[5] = fnum;
-					ba = mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-					
-					
-					
-					
-					
-	                fnum = mxGetFieldNumber(ElemData,"EntranceAngle");
-					if(fnum<0) 
-					    mexErrMsgTxt("Required field 'EntranceAngle' was not found in the element data structure"); 
-					NewFieldNumbers[6] = fnum;
-					entrance_angle = mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-	                
-	                fnum = mxGetFieldNumber(ElemData,"ExitAngle");
-					if(fnum<0) 
-					    mexErrMsgTxt("Required field 'ExitAngle' was not found in the element data structure"); 
-					NewFieldNumbers[7] = fnum;
-					exit_angle = mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-					
-					
-					
-					fnum = mxGetFieldNumber(ElemData,"FringeInt1");/* Optional field FringeInt */
-                    NewFieldNumbers[8] = fnum;
-					if(fnum<0) 
-					    fint1 = 0;
-					else
-					    fint1 = mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-					    
-					    
-					fnum = mxGetFieldNumber(ElemData,"FringeInt2");/* Optional field FringeInt */
-                    NewFieldNumbers[9] = fnum;
-					if(fnum<0) 
-					    fint2 = 0;
-					else
-					    fint2 = mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-					
-					fnum = mxGetFieldNumber(ElemData,"FullGap");
-					NewFieldNumbers[10] = fnum;
-					if(fnum<0) 
-					    gap = 0;
-					else
-					    gap = mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-					
-					fnum = mxGetFieldNumber(ElemData,"H1");
-					NewFieldNumbers[11] = fnum;
-					if(fnum<0) 
-					    h1 = 0;
-					else
-					    h1 = mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-
-					fnum = mxGetFieldNumber(ElemData,"H2");
-					NewFieldNumbers[12] = fnum;
-					if(fnum<0) 
-					    h2 = 0;
-					else
-					    h2 = mxGetScalar(mxGetFieldByNumber(ElemData,0,fnum));
-
-				
-                    fnum = mxGetFieldNumber(ElemData,"R1");
-					NewFieldNumbers[13] = fnum;
-					if(fnum<0)
-					    pr1 = NULL;
-					else
-					    pr1 = mxGetPr(mxGetFieldByNumber(ElemData,0,fnum));
-					
-
-					fnum = mxGetFieldNumber(ElemData,"R2");
-					NewFieldNumbers[14] = fnum;
-					if(fnum<0)
-					    pr2 = NULL;
-					else
-					    pr2 = mxGetPr(mxGetFieldByNumber(ElemData,0,fnum));
-					
-					
-                    fnum = mxGetFieldNumber(ElemData,"T1");
-	                NewFieldNumbers[15] = fnum;
-					if(fnum<0)
-					    pt1 = NULL;
-					else
-					    pt1 = mxGetPr(mxGetFieldByNumber(ElemData,0,fnum));
-					
-	                
-	                fnum = mxGetFieldNumber(ElemData,"T2");
-	                NewFieldNumbers[16] = fnum;
-					if(fnum<0)
-					    pt2 = NULL;
-					else
-					    pt2 = mxGetPr(mxGetFieldByNumber(ElemData,0,fnum));
-
-					
-					returnptr = NewFieldNumbers;
-
-				}	break;
-
-			case	USE_LOCAL_COPY:	/* Get fields from MATLAB using field numbers
-									    The second argument ponter to the array of field 
-									    numbers is previously created with 
-										QuadLinPass( ..., MAKE_LOCAL_COPY)
-									*/	
-				{	A = mxGetPr(mxGetFieldByNumber(ElemData,0,FieldNumbers[0]));
-					B = mxGetPr(mxGetFieldByNumber(ElemData,0,FieldNumbers[1]));
-					max_order = (int)mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[2]));
-					num_int_steps = (int)mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[3]));
-					le = mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[4]));
-					ba = mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[5]));
-					entrance_angle = mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[6]));
-					exit_angle = mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[7]));
-					
-					/* Optional fields */
-					
-					if(FieldNumbers[8]<0) 
-					    fint1 = 0;
-					else
-					    fint1 = mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[8]));
-					
-					    
-					if(FieldNumbers[9]<0) 
-					    fint2 = 0;
-					else
-					    fint2 = mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[9]));
-					    
-					if(FieldNumbers[10]<0) 
-					    gap = 0;
-					else
-					gap = mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[10]));
-
-					if(FieldNumbers[11]<0) 
-					    h1 = 0;
-					else
-					h1 = mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[11]));
-
-					if(FieldNumbers[12]<0) 
-					    h2 = 0;
-					else
-					h2 = mxGetScalar(mxGetFieldByNumber(ElemData,0,FieldNumbers[12]));
-					
-					/* Optional fields */
-					if(FieldNumbers[13]<0)
-					    pr1 = NULL;
-					else
-					    pr1 = mxGetPr(mxGetFieldByNumber(ElemData,0,FieldNumbers[13]));
-					
-					if(FieldNumbers[14]<0)
-					    pr2 = NULL;
-					else
-					    pr2 = mxGetPr(mxGetFieldByNumber(ElemData,0,FieldNumbers[14]));
-					
-					    
-					if(FieldNumbers[15]<0)
-					    pt1 = NULL;
-					else    
-					    pt1 = mxGetPr(mxGetFieldByNumber(ElemData,0,FieldNumbers[15]));
-					    
-					if(FieldNumbers[16]<0)
-					    pt2 = NULL;
-					else 
-					    pt2 = mxGetPr(mxGetFieldByNumber(ElemData,0,FieldNumbers[16]));
-
-					
-					returnptr = FieldNumbers;
-				}	break;
-			default:
-				{	mexErrMsgTxt("No match for calling mode in function BndMPoleSymplectic4E2Pass\n");
-				}
-		}
-
-
-	irho = ba/le;
-	
-	BndMPoleSymplectic4E2Pass(r_in, le, irho, A, B, max_order, num_int_steps, 
-								entrance_angle, exit_angle, fint1, fint2, gap, h1,h2,pt1, pt2, pr1, pr2, num_particles);
-	
-
-	
-	return(returnptr);
-
-}
-
-
- 
-
-
-
-
-
 
 void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {	int m,n;
