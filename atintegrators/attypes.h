@@ -5,6 +5,7 @@ struct elem;
 struct parameters
 {
   int nturn;
+  int mode;
   double RingLength;
   double T0;
 };
