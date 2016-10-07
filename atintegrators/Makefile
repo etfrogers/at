@@ -1,7 +1,7 @@
 
 PYTHON=/usr/include/python2.7
 FLAGS=-std=c99 -fPIC -shared -DPYAT
-NUMPY=/usr/lib/python2.7/dist-packages/numpy/core/include/numpy
+NUMPY=/usr/lib/python2.7/dist-packages/numpy/core/include
 
 SRC=$(wildcard *.c)
 OBJ=$(SRC:.c=.so)
