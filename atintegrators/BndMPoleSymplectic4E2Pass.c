@@ -14,14 +14,16 @@ struct elem
     double BendingAngle;
     double EntranceAngle;
     double ExitAngle;
-    double Gap;
-    double Fint1;
-    double Fint2;
     double *PolynomA;
     double *PolynomB;
     int MaxOrder;
     int NumIntSteps;
     /* Optional fields */
+    double Gap;
+    double Fint1;
+    double Fint2;
+    double h1;
+    double h2;
     double *R1;
     double *R2;
     double *T1;
@@ -306,8 +308,10 @@ ExportMode struct elem *trackFunction(const atElem *ElemData,struct elem *Elem,
         int NumIntSteps=atGetLong(ElemData,"NumIntSteps"); check_error();
         /*optional fields*/
         double Gap=atGetOptionalDouble(ElemData,"Gap", 0); check_error();
-        double Fint1=atGetOptionalDouble(ElemData,"Fint1", 0); check_error();
-        double Fint2=atGetOptionalDouble(ElemData,"Fint2", 0); check_error();
+        double Fint1=atGetOptionalDouble(ElemData,"FringeInt1", 0); check_error();
+        double Fint2=atGetOptionalDouble(ElemData,"FringeInt2", 0); check_error();
+        double h1=atGetOptionalDouble(ElemData,"H1", 0); check_error();
+        double h2=atGetOptionalDouble(ElemData,"H2", 0); check_error();
         double *R1=atGetOptionalDoubleArray(ElemData,"R1"); check_error();
         double *R2=atGetOptionalDoubleArray(ElemData,"R2"); check_error();
         double *T1=atGetOptionalDoubleArray(ElemData,"T1"); check_error();
@@ -320,6 +324,8 @@ ExportMode struct elem *trackFunction(const atElem *ElemData,struct elem *Elem,
         Elem->Gap=Gap;
         Elem->Fint1=Fint1;
         Elem->Fint2=Fint2;
+        Elem->h1=h1;
+        Elem->h2=h2;
         Elem->PolynomA=PolynomA;
         Elem->PolynomB=PolynomB;
         Elem->MaxOrder=MaxOrder;
@@ -331,7 +337,9 @@ ExportMode struct elem *trackFunction(const atElem *ElemData,struct elem *Elem,
         Elem->T2=T2;
     }
     double irho = Elem->BendingAngle / Elem->Length;
-    BndMPoleSymplectic4E2Pass(r_in, Elem->Length, irho, Elem->PolynomA, Elem->PolynomB, Elem->MaxOrder, Elem->NumIntSteps, Elem->EntranceAngle, Elem->ExitAngle, Elem->Fint1, Elem->Fint2, Elem->Gap, 0, 0, Elem->T1, Elem->T2, Elem->R1, Elem->R2, num_particles);
+    BndMPoleSymplectic4E2Pass(r_in, Elem->Length, irho, Elem->PolynomA, Elem->PolynomB, Elem->MaxOrder, Elem->NumIntSteps,
+        Elem->EntranceAngle, Elem->ExitAngle, Elem->Fint1, Elem->Fint2, Elem->Gap, Elem->h1, Elem->h2,
+        Elem->T1, Elem->T2, Elem->R1, Elem->R2, num_particles);
     return Elem;
 }
 
@@ -340,155 +348,54 @@ ExportMode struct elem *trackFunction(const atElem *ElemData,struct elem *Elem,
 #ifdef MATLAB_MEX_FILE
 
 void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{	int m,n;
-	double *r_in;
-	double le, ba, *A, *B;  
-	double irho;
-	int max_order, num_int_steps;
-	double entrance_angle, exit_angle ;
-	double  *pr1, *pr2, *pt1, *pt2, fint1, fint2, gap,h1,h2;  
-    mxArray *tmpmxptr;
+{
+    if (nrhs == 2) {
+	    double *r_in;
+        const mxArray *ElemData = prhs[0];
+        int num_particles = mxGetN(prhs[1]);
+	    if (mxGetM(prhs[1]) != 6) mexErrMsgTxt("Second argument must be a 6 x N matrix");
 
-    if(nrhs)
-    {
-    /* ALLOCATE memory for the output array of the same size as the input */
-	m = mxGetM(prhs[1]);
-	n = mxGetN(prhs[1]);
-	if(m!=6) 
-		mexErrMsgTxt("Second argument must be a 6 x N matrix");
-	
-	
-	
-    tmpmxptr =mxGetField(prhs[0],0,"PolynomA");
-	if(tmpmxptr)
-		A = mxGetPr(tmpmxptr);
-	/*else 		mexErrMsgTxt("Required field 'PolynomA' was not found in the element data structure");*/
-				    
-	tmpmxptr =mxGetField(prhs[0],0,"PolynomB");
-	if(tmpmxptr)   
-		B = mxGetPr(tmpmxptr);
-	else
-		mexErrMsgTxt("Required field 'PolynomB' was not found in the element data structure");
-					    
-	tmpmxptr = mxGetField(prhs[0],0,"MaxOrder");
-	if(tmpmxptr)
-		max_order = (int)mxGetScalar(tmpmxptr);
-	else
-		mexErrMsgTxt("Required field 'MaxOrder' was not found in the element data structure");
-				        
-	tmpmxptr = mxGetField(prhs[0],0,"NumIntSteps");
-	if(tmpmxptr)   
-		num_int_steps = (int)mxGetScalar(tmpmxptr);
-	else
-		mexErrMsgTxt("Required field 'NumIntSteps' was not found in the element data structure");    
-				    
-	tmpmxptr = mxGetField(prhs[0],0,"Length");
-	if(tmpmxptr)
-	    le = mxGetScalar(tmpmxptr);
-	else
-		mexErrMsgTxt("Required field 'Length' was not found in the element data structure");    
-					    
-	tmpmxptr = mxGetField(prhs[0],0,"BendingAngle");
-	if(tmpmxptr)
-		ba = mxGetScalar(tmpmxptr);
-	else
-		mexErrMsgTxt("Required field 'BendingAngle' was not found in the element data structure"); 
-				
-				
-	tmpmxptr = mxGetField(prhs[0],0,"EntranceAngle");
-	if(tmpmxptr)
-	    entrance_angle = mxGetScalar(tmpmxptr);
-	else
-		mexErrMsgTxt("Required field 'EntranceAngle' was not found in the element data structure"); 
-				
-				
-	tmpmxptr = mxGetField(prhs[0],0,"ExitAngle");
-	if(tmpmxptr)
-		exit_angle = mxGetScalar(tmpmxptr);
-	else
-		mexErrMsgTxt("Required field 'ExitAngle' was not found in the element data structure");	
+        double Length=atGetDouble(ElemData,"Length"); check_error();
+        double BendingAngle=atGetDouble(ElemData,"BendingAngle"); check_error();
+        double EntranceAngle=atGetDouble(ElemData,"EntranceAngle"); check_error();
+        double ExitAngle=atGetDouble(ElemData,"ExitAngle"); check_error();
+        double *PolynomA=atGetDoubleArray(ElemData,"PolynomA"); check_error();
+        double *PolynomB=atGetDoubleArray(ElemData,"PolynomB"); check_error();
+        int MaxOrder=atGetLong(ElemData,"MaxOrder"); check_error();
+        int NumIntSteps=atGetLong(ElemData,"NumIntSteps"); check_error();
+        /*optional fields*/
+        double Gap=atGetOptionalDouble(ElemData,"Gap", 0); check_error();
+        double Fint1=atGetOptionalDouble(ElemData,"FringeInt1", 0); check_error();
+        double Fint2=atGetOptionalDouble(ElemData,"FringeInt2", 0); check_error();
+        double h1=atGetOptionalDouble(ElemData,"H1", 0); check_error();
+        double h2=atGetOptionalDouble(ElemData,"H2", 0); check_error();
+        double *R1=atGetOptionalDoubleArray(ElemData,"R1"); check_error();
+        double *R2=atGetOptionalDoubleArray(ElemData,"R2"); check_error();
+        double *T1=atGetOptionalDoubleArray(ElemData,"T1"); check_error();
+        double *T2=atGetOptionalDoubleArray(ElemData,"T2"); check_error();
+        double irho = BendingAngle/Length;
 
-	tmpmxptr = mxGetField(prhs[0],0,"FringeInt1");
-	    if(tmpmxptr)
-	        fint1 = mxGetScalar(tmpmxptr);
-	    else
-	        fint1 = 0;
-	        
-	tmpmxptr = mxGetField(prhs[0],0,"FringeInt2");
-	    if(tmpmxptr)
-	        fint2 = mxGetScalar(tmpmxptr);
-	    else
-	        fint2 = 0;
-	    
-	    tmpmxptr = mxGetField(prhs[0],0,"FullGap");
-	    if(tmpmxptr)
-	        gap = mxGetScalar(tmpmxptr);
-	    else
-	        gap = 0;
-
-			    
-		tmpmxptr = mxGetField(prhs[0],0,"H1");
-	    if(tmpmxptr)
-	        h1 = mxGetScalar(tmpmxptr);
-	    else
-	        h1 = 0;
-		tmpmxptr = mxGetField(prhs[0],0,"H2");
-	    
-		if(tmpmxptr)
-	        h2 = mxGetScalar(tmpmxptr);
-	    else
-	        h2 = 0;
-	    
-	    tmpmxptr = mxGetField(prhs[0],0,"R1");
-	    if(tmpmxptr)
-	        pr1 = mxGetPr(tmpmxptr);
-	    else
-	        pr1=NULL; 
-	    
-	    tmpmxptr = mxGetField(prhs[0],0,"R2");
-	    if(tmpmxptr)
-	        pr2 = mxGetPr(tmpmxptr);
-	    else
-	        pr2=NULL; 
-	    
-	    
-	    tmpmxptr = mxGetField(prhs[0],0,"T1");
-	    
-	    
-	    if(tmpmxptr)
-	        pt1=mxGetPr(tmpmxptr);
-	    else
-	        pt1=NULL;
-	    
-	    tmpmxptr = mxGetField(prhs[0],0,"T2");
-	    if(tmpmxptr)
-	        pt2=mxGetPr(tmpmxptr);
-	    else
-	        pt2=NULL;  
-		
-		
-    irho = ba/le;
-    plhs[0] = mxDuplicateArray(prhs[1]);
-	r_in = mxGetPr(plhs[0]);
-	BndMPoleSymplectic4E2Pass(r_in, le, irho, A, B, max_order, num_int_steps, 
-								entrance_angle, exit_angle, fint1, fint2, gap, h1,h2,pt1, pt2, pr1, pr2, n);
-
+		    /* ALLOCATE memory for the output array of the same size as the input */
+        plhs[0] = mxDuplicateArray(prhs[1]);
+        r_in = mxGetPr(plhs[0]);
+        BndMPoleSymplectic4E2Pass(r_in, Length, irho, PolynomA, PolynomB, MaxOrder, NumIntSteps, EntranceAngle, ExitAngle,
+            Fint1, Fint2, Gap, h1, h2, T1, T2, R1, R2, num_particles);
 	}
-	else
-	{   /* return list of required fields */
-	    plhs[0] = mxCreateCellMatrix(7,1);
+    else if (nrhs == 0) {
+        /* list of required fields */
+	    plhs[0] = mxCreateCellMatrix(8,1);
 	    
 	    mxSetCell(plhs[0],0,mxCreateString("Length"));
 	    mxSetCell(plhs[0],1,mxCreateString("BendingAngle"));
 	    mxSetCell(plhs[0],2,mxCreateString("EntranceAngle"));
 	    mxSetCell(plhs[0],3,mxCreateString("ExitAngle"));
-          /*mxSetCell(plhs[0],4,mxCreateString("PolynomA"));*/
-	    mxSetCell(plhs[0],4,mxCreateString("PolynomB"));
-	    mxSetCell(plhs[0],5,mxCreateString("MaxOrder"));
-	    mxSetCell(plhs[0],6,mxCreateString("NumIntSteps"));	 	    
+        mxSetCell(plhs[0],4,mxCreateString("PolynomA"));
+	    mxSetCell(plhs[0],5,mxCreateString("PolynomB"));
+	    mxSetCell(plhs[0],6,mxCreateString("MaxOrder"));
+	    mxSetCell(plhs[0],7,mxCreateString("NumIntSteps"));
 	    
-	    if(nlhs>1) /* Required and optional fields */ 
-	    {   plhs[1] = mxCreateCellMatrix(9,1);
+	    if (nlhs > 1) {    /* list of optional fields */
+	        plhs[1] = mxCreateCellMatrix(9,1);
 	        mxSetCell(plhs[1],0,mxCreateString("FullGap"));
 	        mxSetCell(plhs[1],1,mxCreateString("FringeInt1"));
 	        mxSetCell(plhs[1],2,mxCreateString("FringeInt2"));
@@ -501,8 +408,8 @@ void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 						
 	    }
 	}
-
-
-
+    else {
+        mexErrMsgIdAndTxt("AT:WrongArg","Needs 0 or 2 arguments");
+	}
 }
 #endif /*MATLAB_MEX_FILE*/
