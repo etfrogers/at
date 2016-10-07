@@ -2,6 +2,7 @@ from distutils.core import setup, Extension
 import numpy
 import sys
 import os
+import glob
 
 macros=[]
 
@@ -19,3 +20,7 @@ at = Extension('at', sources=['at.c'],
                include_dirs=[numpy.get_include(), '../atintegrators'])
 
 setup(name='at', py_modules=['elements','load_mat'], ext_modules=[at])
+
+for pass_method in glob.glob(os.path.join(integrator_path, '*Pass.c')):
+    print(pass_method)
+    setup(name=pass_method[:-2], ext_modules=[Extension(name=pass_method[:-2], sources=[pass_method], define_macros=[('PYAT', None)], include_dirs=[numpy.get_include(), '../atintegrators'])])

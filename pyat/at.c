@@ -41,7 +41,7 @@
 #endif
 
 #ifndef INTEGRATOR_PATH
-#define INTEGRATOR_PATH "../atintegrators"
+#define INTEGRATOR_PATH "./prefix/lib/python2.7/site-packages/atintegrators"
 #endif /*INTEGRATOR_PATH*/
 
 typedef struct elem *(*pass_function)(const PyObject *element, struct elem *elemptr,
