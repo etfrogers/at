@@ -2,19 +2,14 @@
 language: python
 
 python:
- - "2.7_with_system_site_packages"
-
-before_install:
- - sudo apt-get update
- - sudo apt-get install -qq python-numpy
- - ls /usr/lib/python2.7/dist-packages/numpy/core/include/numpy
+ - "2.7"
 
 install:
- - make -C atintegrators
- - pip install pytest
+ - pip install numpy
+ - cd pyat
+ - python setup.py install --prefix=prefix
 
 script:
- - cd pyat
  - export PYTHONPATH=./prefix/lib/python2.7/site-packages
  - py.test test
 
