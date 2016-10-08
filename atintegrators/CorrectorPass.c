@@ -44,6 +44,8 @@ void CorrectorPass(double *r_in, double xkick, double ykick, double len,  int nu
 		}	
 }
 
+initCorrectorPass() {};
+
 #ifdef MATLAB_MEX_FILE
 
 #include "elempass.h"

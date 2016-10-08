@@ -13,21 +13,25 @@ pyversion = "python{0.major}.{0.minor}".format(sys.version_info)
 integrator_src = os.path.abspath('../atintegrators')
 integrator_build = None
 
+
 for pass_method in glob.glob(os.path.join(integrator_src, '*Pass.c')):
     name = os.path.basename(pass_method)[:-2]
-    ext = Extension(name=name,
+    try:
+        ext = Extension(name=name,
               sources=[pass_method],
               define_macros=macros,
               include_dirs=[numpy.get_include(),
                             integrator_src])
+        dist = setup(name=pass_method[:-2], ext_modules=[ext])
+        install_location = dist.command_obj['install'].install_platlib
+        if integrator_build is None:
+            integrator_build = '{}'.format(install_location)
+            print('integrator path: {}'.format(integrator_build))
+            #macros.append(('INTEGRATOR_PATH', integrator_build.replace("\\", "/")))
+    except Exception as e:
+        print e
 
-    dist = setup(name=pass_method[:-2], ext_modules=[ext])
-    install_location = dist.command_obj['install'].install_platlib
-    if integrator_build is None:
-        integrator_build = '"{}"'.format(install_location)
-        print('integrator path: {}'.format(install_location))
-        macros.append(('INTEGRATOR_PATH', integrator_build))
-
+print(integrator_build)
 at = Extension('at', sources=['at.c'],
                define_macros=macros,
                include_dirs=[numpy.get_include(), integrator_src])

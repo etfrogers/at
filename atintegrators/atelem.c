@@ -3,7 +3,7 @@
 
 #include "attypes.h"
 
-#if defined(PCWIN)
+#if defined(PCWIN) || defined(_WIN32)
 #define ExportMode __declspec(dllexport)
 #else
 #define ExportMode
@@ -81,7 +81,7 @@ static void *atCalloc(size_t count, size_t size)
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
 #include <stdlib.h>
-#include <stdbool.h>
+
 
 #if PY_MAJOR_VERSION >= 3
 #define NUMPY_IMPORT_ARRAY_RETVAL NULL
@@ -92,18 +92,19 @@ static void *atCalloc(size_t count, size_t size)
 #define PyLong_AsLong PyInt_AsLong
 #endif
 
+/*
 #ifndef NAN
-static const double dnan = 0.0 / 0.0;
-#define NAN dnan
+DECLSPEC_SELECTANY extern const float FLOAT_NaN = ((float)((1e308 * 10)*0.));
+#define NAN FLOAT_NaN
 #endif
 #ifndef INFINITY
-static const double pinf = 1.0 / 0.0;
-#define INFINITY pinf
+DECLSPEC_SELECTANY extern const float FLOAT_POSITIVE_INFINITY = ((float)(1e308 * 10));
+#define INFINITY FLOAT_POSITIVE_INFINITY
 #endif
-
+*/
 typedef PyObject atElem;
 #define check_error() if (PyErr_Occurred()) return NULL
-#define atIsFinite isfinite
+#define atIsFinite _finite
 #define atIsNaN isnan
 #define atGetNaN() (NAN)
 #define atGetInf() (INFINITY)
@@ -160,11 +161,12 @@ static double atGetOptionalDouble(const PyObject *element, const char *name, dou
 
 static double *atGetDoubleArray(const PyObject *element, char *name) {
     char errmessage[60];
+    PyArrayObject *array;
     if (!array_imported) {
         init_numpy();
         array_imported = 1;
     }
-    PyArrayObject *array = (PyArrayObject *) PyObject_GetAttrString((PyObject *)element, name);
+    array = (PyArrayObject *) PyObject_GetAttrString((PyObject *)element, name);
     if (array == NULL) {
         return NULL;
     }
@@ -188,11 +190,12 @@ static double *atGetDoubleArray(const PyObject *element, char *name) {
 
 static double *atGetOptionalDoubleArray(const PyObject *element, char *name) {
     char errmessage[60];
+	PyArrayObject *array;
     if (!array_imported) {
         init_numpy();
         array_imported = 1;
     }
-    PyArrayObject *array = (PyArrayObject *) PyObject_GetAttrString((PyObject *)element, name);
+    array = (PyArrayObject *) PyObject_GetAttrString((PyObject *)element, name);
     if (array == NULL) {
         PyErr_Clear();
         return NULL;
@@ -225,7 +228,7 @@ static const double dnan = 0.0 / 0.0;
 #define NAN dnan
 #endif
 #ifndef INFINITY
-static const double pinf = 1.0 / 0.0;
+static const double pinf = 0.0;
 #define INFINITY pinf
 #endif
 

@@ -13,9 +13,11 @@
 #include <stdlib.h>
 #include <attypes.h>
 
+
+
 #define ATPY_PASS "trackFunction"
 
-#if defined(PCWIN) || defined(PCWIN64)
+#if defined(PCWIN) || defined(PCWIN64) || defined(_WIN32)
 #include <windows.h>
 #define LIBRARYHANDLETYPE HINSTANCE
 #define FREELIBFCN(libfilename) FreeLibrary((libfilename))
@@ -41,7 +43,7 @@
 #endif
 
 #ifndef INTEGRATOR_PATH
-#define INTEGRATOR_PATH "./prefix/lib/python2.7/site-packages/atintegrators"
+#define INTEGRATOR_PATH "./prefix/Lib/site-packages"
 #endif /*INTEGRATOR_PATH*/
 
 typedef struct elem *(*pass_function)(const PyObject *element, struct elem *elemptr,
@@ -88,10 +90,17 @@ static pass_function pass_method(char *fn_name) {
     }
     else {
         char lib_file[300], buffer[100];
-        snprintf(lib_file, sizeof(lib_file), "%s/%s.so", INTEGRATOR_PATH, fn_name);
-        LIBRARYHANDLETYPE dl_handle = LOADLIBFCN(lib_file);
+		LIBRARYHANDLETYPE dl_handle;
+        snprintf(lib_file, sizeof(lib_file), "%s/%s.pyd", INTEGRATOR_PATH, fn_name);
+		printf("%s/%s.pyd", INTEGRATOR_PATH, fn_name);
+		if (access(lib_file, 0) != -1 ) {
+			printf("exists");
+		} else {
+			printf("doesn't exist");
+		}
+        dl_handle = LOADLIBFCN(lib_file);
         if (dl_handle == NULL) {
-            snprintf(buffer, sizeof(buffer), "Cannot load %s.so", fn_name);
+            snprintf(buffer, sizeof(buffer), "Cannot load %s.pyd", fn_name);
             PyErr_SetString(PyExc_RuntimeError, buffer);
             return NULL;
         }
@@ -190,6 +199,8 @@ static PyObject *at_atpass(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     if (!reuse) new_lattice = 1;
     if (new_lattice) {
+		PyObject **element;
+		pass_function *integrator;
         int nelem;
         for (nelem=0; nelem<num_elements; nelem++) {
             free(elemdata_list[nelem]);
@@ -209,15 +220,17 @@ static PyObject *at_atpass(PyObject *self, PyObject *args, PyObject *kwargs) {
         integrator_list = (pass_function *)realloc(integrator_list, num_elements*sizeof(pass_function));
 
         lattice_length = 0.0;
-        PyObject **element = element_list;
-        pass_function *integrator = integrator_list;
+        element = element_list;
+        integrator = integrator_list;
         for (nelem = 0; nelem < num_elements; nelem++) {
             PyObject *el = PyList_GET_ITEM(lattice, nelem);
             PyObject *PyPassMethod = PyObject_GetAttrString(el, "PassMethod");
+			pass_function fn_handle;
+			double length;
             if (!PyPassMethod) return print_error(nelem, rout);     /* No PassMethod */
-            pass_function fn_handle = pass_method(PyUnicode_AsUTF8(PyPassMethod));
+            fn_handle = pass_method(PyUnicode_AsUTF8(PyPassMethod));
             if (!fn_handle) return print_error(nelem, rout);        /* No trackFunction for the given PassMethod */
-            double length = PyFloat_AsDouble(PyObject_GetAttrString(el, "Length"));
+            length = PyFloat_AsDouble(PyObject_GetAttrString(el, "Length"));
             if (PyErr_Occurred()) PyErr_Clear();
             else lattice_length += length;
             *integrator++ = fn_handle;
