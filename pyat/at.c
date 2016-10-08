@@ -23,12 +23,14 @@
 #define FREELIBFCN(libfilename) FreeLibrary((libfilename))
 #define LOADLIBFCN(libfilename) LoadLibrary((libfilename))
 #define GETTRACKFCN(libfilename) GetProcAddress((libfilename),ATPY_PASS)
+#define PYLIBEXT "pyd"
 #else
 #include <dlfcn.h>
 #define LIBRARYHANDLETYPE void *
 #define FREELIBFCN(libfilename) dlclose(libfilename)
 #define LOADLIBFCN(libfilename) dlopen((libfilename),RTLD_LAZY)
 #define GETTRACKFCN(libfilename) dlsym((libfilename),ATPY_PASS)
+#define PYLIBEXT "so"
 #endif
 
 #if PY_MAJOR_VERSION >= 3
@@ -90,23 +92,18 @@ static pass_function pass_method(char *fn_name) {
     }
     else {
         char lib_file[300], buffer[100];
-		LIBRARYHANDLETYPE dl_handle;
-        snprintf(lib_file, sizeof(lib_file), "%s/%s.pyd", INTEGRATOR_PATH, fn_name);
-		printf("%s/%s.pyd", INTEGRATOR_PATH, fn_name);
-		if (access(lib_file, 0) != -1 ) {
-			printf("exists");
-		} else {
-			printf("doesn't exist");
-		}
+        LIBRARYHANDLETYPE dl_handle;
+        snprintf(lib_file, sizeof(lib_file), "%s/%s.%s", INTEGRATOR_PATH, fn_name, PYLIBEXT);
+        printf("%s/%s.pyd", INTEGRATOR_PATH, fn_name);
         dl_handle = LOADLIBFCN(lib_file);
         if (dl_handle == NULL) {
-            snprintf(buffer, sizeof(buffer), "Cannot load %s.pyd", fn_name);
+            snprintf(buffer, sizeof(buffer), "Cannot load %s.%s", fn_name, PYLIBEXT);
             PyErr_SetString(PyExc_RuntimeError, buffer);
             return NULL;
         }
         fn_handle = GETTRACKFCN(dl_handle);
         if (fn_handle == NULL) {
-            snprintf(buffer, sizeof(buffer), "No trackFunction in %s.so", fn_name);
+            snprintf(buffer, sizeof(buffer), "No trackFunction in %s.%s", fn_name, PYLIBEXT);
             FREELIBFCN(dl_handle);
             PyErr_SetString(PyExc_RuntimeError, buffer);
             return NULL;

@@ -25,9 +25,9 @@ for pass_method in glob.glob(os.path.join(integrator_src, '*Pass.c')):
         dist = setup(name=pass_method[:-2], ext_modules=[ext])
         install_location = dist.command_obj['install'].install_platlib
         if integrator_build is None:
-            integrator_build = '{}'.format(install_location)
+            integrator_build = '"{}"'.format(install_location)
             print('integrator path: {}'.format(integrator_build))
-            #macros.append(('INTEGRATOR_PATH', integrator_build.replace("\\", "/")))
+            macros.append(('INTEGRATOR_PATH', integrator_build))
     except Exception as e:
         print e
 
