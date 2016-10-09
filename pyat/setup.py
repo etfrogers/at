@@ -16,19 +16,16 @@ integrator_build = None
 
 for pass_method in glob.glob(os.path.join(integrator_src, '*Pass.c')):
     name = os.path.basename(pass_method)[:-2]
-    try:
-        ext = Extension(name=name,
-              sources=[pass_method],
-              define_macros=macros,
-              include_dirs=[numpy.get_include(),
-                            integrator_src])
-        dist = setup(name=pass_method[:-2], ext_modules=[ext])
-        install_location = dist.command_obj['install'].install_platlib
-        if integrator_build is None:
-            integrator_build = install_location
-            macros.append(('INTEGRATOR_PATH', integrator_build))
-    except Exception as e:
-        print e
+    ext = Extension(name=name,
+          sources=[pass_method],
+          define_macros=macros,
+          include_dirs=[numpy.get_include(),
+                        integrator_src])
+    dist = setup(name=pass_method[:-2], ext_modules=[ext])
+    install_location = dist.command_obj['install'].install_platlib
+    if integrator_build is None:
+        integrator_build = install_location.replace("\\", "/")
+        macros.append(('INTEGRATOR_PATH', integrator_build))
 
 print(integrator_build)
 at = Extension('at', sources=['at.c'],
