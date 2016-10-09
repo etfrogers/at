@@ -104,7 +104,7 @@ DECLSPEC_SELECTANY extern const float FLOAT_POSITIVE_INFINITY = ((float)(1e308 *
 */
 typedef PyObject atElem;
 #define check_error() if (PyErr_Occurred()) return NULL
-#define atIsFinite _finite
+#define atIsFinite isfinite
 #define atIsNaN isnan
 #define atGetNaN() (NAN)
 #define atGetInf() (INFINITY)

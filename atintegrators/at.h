@@ -3,11 +3,12 @@
 
 #include <math.h>
 
-#if defined(_WIN32)
+#if defined(_WIN32)  /*Windows*/
 #include <Windows.h>
 #include <math.h>
 #define isnan(x) _isnan(x)
 #define isinf(x) (!_finite(x))
+#define isfinite(x) _finite(x)
 DECLSPEC_SELECTANY extern const float FLOAT_NaN = ((float)((1e308 * 10)*0.));
 #define NAN FLOAT_NaN
 DECLSPEC_SELECTANY extern const float FLOAT_POSITIVE_INFINITY = ((float)(1e308 * 10));
@@ -15,7 +16,7 @@ DECLSPEC_SELECTANY extern const float FLOAT_POSITIVE_INFINITY = ((float)(1e308 *
 typedef int bool;
 #define false 0
 #define true 1
-#elif !defined(MATLAB_MEX_FILE)
+#elif !defined(MATLAB_MEX_FILE) /*Linux*/
 #include <stdbool.h>
 static const double pinf = 1.0 / 0.0;
 #define INFINITY pinf
