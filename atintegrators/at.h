@@ -8,6 +8,7 @@
 #define isnan(x) _isnan(x)
 #define isinf(x) (!_finite(x))
 #define isfinite(x) _finite(x)
+/* See https://blogs.msdn.microsoft.com/oldnewthing/20100305-00/?p=14713 */
 DECLSPEC_SELECTANY extern const float FLOAT_NaN = ((float)((1e308 * 10)*0.));
 #define NAN FLOAT_NaN
 DECLSPEC_SELECTANY extern const float FLOAT_POSITIVE_INFINITY = ((float)(1e308 * 10));

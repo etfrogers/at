@@ -87,7 +87,7 @@ void SolenoidLinearPass(double *r_in, double le, double ks, double *T1, double *
 		}
 }
 
-
+void initSolenoidLinearPass() {};
 
 #ifdef MATLAB_MEX_FILE
 

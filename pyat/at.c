@@ -47,7 +47,7 @@
 #define xstr(s) str(s)
 #define str(s) #s
 #ifndef INTEGRATOR_PATH
-#define INTEGRATOR_PATH ./prefix/Lib/site-packages
+#define INTEGRATOR_PATH ../atintegrators
 #endif /*INTEGRATOR_PATH*/
 
 typedef struct elem *(*pass_function)(const PyObject *element, struct elem *elemptr,

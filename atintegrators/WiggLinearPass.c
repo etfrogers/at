@@ -80,6 +80,8 @@ void WiggLinearPass(double *r, double le, double invrho, double kxkz, double *T1
    }
 }
 
+void initWiggLinearPass() {};
+
 /********** END PHYSICS SECTION ***********************************************/
 /******************************************************************************/
 #ifdef MATLAB_MEX_FILE
