@@ -5,7 +5,6 @@
 
 #if defined(_WIN32)  /*Windows*/
 #include <Windows.h>
-#include <math.h>
 #define isnan(x) _isnan(x)
 #define isinf(x) (!_finite(x))
 #define isfinite(x) _finite(x)
@@ -18,10 +17,14 @@ typedef int bool;
 #define true 1
 #elif !defined(MATLAB_MEX_FILE) /*Linux*/
 #include <stdbool.h>
+#ifndef INFINITY
 static const double pinf = 1.0 / 0.0;
 #define INFINITY pinf
+#endif
+#ifndef NAN
 static const double dnan = 0.0 / 0.0;
 #define NAN dnan
+#endif
 #endif /* defined(_WIN32) */
 
 #ifdef MATLAB_MEX_FILE

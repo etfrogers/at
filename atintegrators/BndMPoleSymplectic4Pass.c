@@ -200,7 +200,7 @@ void BndMPoleSymplectic4Pass(double *r, double le, double irho, double *A, doubl
 			}
 }
 
-initBndMPoleSymplectic4Pass() {};
+void initBndMPoleSymplectic4Pass() {};
     	
 #ifdef MATLAB_MEX_FILE
 

@@ -22,7 +22,7 @@ void EAperturePass(double *r_in, double *axesptr, int num_particles)
     }
 }
 
-initEAperturePass() {};
+void initEAperturePass() {};
 
 #ifdef MATLAB_MEX_FILE
 

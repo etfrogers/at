@@ -73,7 +73,7 @@ void DeltaQPass(double *r_in, int num_particles, double alphax, double alphay,
     }
 }
 
-initDeltaQPass() {};
+void initDeltaQPass() {};
 
 #ifdef MATLAB_MEX_FILE
 

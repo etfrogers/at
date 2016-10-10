@@ -147,7 +147,7 @@ void IdKickMapModelPass(double *r, double le, double *xkick1, double *ykick1, do
     }
 }
 
-initIdTablePass() {};
+void initIdTablePass() {};
 
 #ifdef MATLAB_MEX_FILE
 

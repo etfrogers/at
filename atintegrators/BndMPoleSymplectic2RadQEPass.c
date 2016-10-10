@@ -264,7 +264,7 @@ void BndMPoleSymplectic4RadPass(double *r, double le, double irho, double *A, do
 }
 
 
-initBndMPoleSymplectic2RadQEPass() {};
+void initBndMPoleSymplectic2RadQEPass() {};
 
 #ifdef MATLAB_MEX_FILE
 #define NUM_FIELDS_2_REMEMBER 16
