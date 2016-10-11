@@ -357,30 +357,34 @@ void initBndMPoleSymplectic4E2Pass(void) {};
 void mexFunction(	int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     if (nrhs == 2) {
-	    double *r_in;
+        double irho;
+        double Length, BendingAngle, EntranceAngle, ExitAngle, Gap, Fint1, Fint2;
+        int MaxOrder, NumIntSteps;
+        double *PolynomA, *PolynomB, h1, h2, *R1, *R2, *T1, *T2;
+        double *r_in;
         const mxArray *ElemData = prhs[0];
         int num_particles = mxGetN(prhs[1]);
 	    if (mxGetM(prhs[1]) != 6) mexErrMsgTxt("Second argument must be a 6 x N matrix");
 
-        double Length=atGetDouble(ElemData,"Length"); check_error();
-        double BendingAngle=atGetDouble(ElemData,"BendingAngle"); check_error();
-        double EntranceAngle=atGetDouble(ElemData,"EntranceAngle"); check_error();
-        double ExitAngle=atGetDouble(ElemData,"ExitAngle"); check_error();
-        double *PolynomA=atGetDoubleArray(ElemData,"PolynomA"); check_error();
-        double *PolynomB=atGetDoubleArray(ElemData,"PolynomB"); check_error();
-        int MaxOrder=atGetLong(ElemData,"MaxOrder"); check_error();
-        int NumIntSteps=atGetLong(ElemData,"NumIntSteps"); check_error();
+        Length=atGetDouble(ElemData,"Length"); check_error();
+        BendingAngle=atGetDouble(ElemData,"BendingAngle"); check_error();
+        EntranceAngle=atGetDouble(ElemData,"EntranceAngle"); check_error();
+        ExitAngle=atGetDouble(ElemData,"ExitAngle"); check_error();
+        PolynomA=atGetDoubleArray(ElemData,"PolynomA"); check_error();
+        PolynomB=atGetDoubleArray(ElemData,"PolynomB"); check_error();
+        MaxOrder=atGetLong(ElemData,"MaxOrder"); check_error();
+        NumIntSteps=atGetLong(ElemData,"NumIntSteps"); check_error();
         /*optional fields*/
-        double Gap=atGetOptionalDouble(ElemData,"Gap", 0); check_error();
-        double Fint1=atGetOptionalDouble(ElemData,"FringeInt1", 0); check_error();
-        double Fint2=atGetOptionalDouble(ElemData,"FringeInt2", 0); check_error();
-        double h1=atGetOptionalDouble(ElemData,"H1", 0); check_error();
-        double h2=atGetOptionalDouble(ElemData,"H2", 0); check_error();
-        double *R1=atGetOptionalDoubleArray(ElemData,"R1"); check_error();
-        double *R2=atGetOptionalDoubleArray(ElemData,"R2"); check_error();
-        double *T1=atGetOptionalDoubleArray(ElemData,"T1"); check_error();
-        double *T2=atGetOptionalDoubleArray(ElemData,"T2"); check_error();
-        double irho = BendingAngle/Length;
+        Gap=atGetOptionalDouble(ElemData,"Gap", 0); check_error();
+        Fint1=atGetOptionalDouble(ElemData,"Fint1", 0); check_error();
+        Fint2=atGetOptionalDouble(ElemData,"Fint2", 0); check_error();
+        h1=atGetOptionalDouble(ElemData,"H1", 0); check_error();
+        h2=atGetOptionalDouble(ElemData,"H2", 0); check_error();
+        R1=atGetOptionalDoubleArray(ElemData,"R1"); check_error();
+        R2=atGetOptionalDoubleArray(ElemData,"R2"); check_error();
+        T1=atGetOptionalDoubleArray(ElemData,"T1"); check_error();
+        T2=atGetOptionalDoubleArray(ElemData,"T2"); check_error();
+        irho = BendingAngle/Length;
 
 		    /* ALLOCATE memory for the output array of the same size as the input */
         plhs[0] = mxDuplicateArray(prhs[1]);
