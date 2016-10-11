@@ -27,7 +27,7 @@ void Matrix66Pass(double *r, const double *M,
 	}
 }
 
-void initMatrix66Pass() {};
+void initMatrix66Pass(void) {};
 
 #ifdef MATLAB_MEX_FILE
 

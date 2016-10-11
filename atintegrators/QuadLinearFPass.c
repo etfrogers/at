@@ -189,7 +189,7 @@ void QuadLinearFPass(double *r, double le, double kv, double I1a, double I1b,dou
 		}		
 }
 
-initQuadLinearFPass() {};
+initQuadLinearFPass(void) {};
 
 /********** END PHYSICS SECTION ***********************************************/
 /******************************************************************************/

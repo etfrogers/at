@@ -91,7 +91,7 @@ ExportMode struct elem *trackFunction(const atElem *ElemData,struct elem *Elem,
     return Elem;
 }
 
-void initRFCavityPass() {};
+void initRFCavityPass(void) {};
 #endif /*defined(MATLAB_MEX_FILE) || defined(PYAT)*/
 
 #if defined(MATLAB_MEX_FILE)

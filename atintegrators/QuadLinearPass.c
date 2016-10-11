@@ -135,7 +135,7 @@ ExportMode struct elem *trackFunction(const atElem *ElemData,struct elem *Elem,
     return(Elem);
 }
 
-initQuadLinearPass() {};
+initQuadLinearPass(void) {};
 
 #endif /*defined(MATLAB_MEX_FILE) || defined(PYAT)*/
 

@@ -80,7 +80,7 @@ void WiggLinearPass(double *r, double le, double invrho, double kxkz, double *T1
    }
 }
 
-void initWiggLinearPass() {};
+void initWiggLinearPass(void) {};
 
 /********** END PHYSICS SECTION ***********************************************/
 /******************************************************************************/

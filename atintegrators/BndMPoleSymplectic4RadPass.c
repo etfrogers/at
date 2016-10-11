@@ -249,7 +249,7 @@ void BndMPoleSymplectic4RadPass(double *r, double le, double irho, double *A, do
 			}
 }
 
-void initBndMPoleSymplectic4RadPass() {};
+void initBndMPoleSymplectic4RadPass(void) {};
 
 #ifdef MATLAB_MEX_FILE
 

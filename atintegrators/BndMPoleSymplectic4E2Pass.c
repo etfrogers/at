@@ -340,7 +340,7 @@ ExportMode struct elem *trackFunction(const atElem *ElemData,struct elem *Elem,
     return Elem;
 }
 
-void initBndMPoleSymplectic4E2Pass() {};
+void initBndMPoleSymplectic4E2Pass(void) {};
 
 #endif /*MATLAB_MEX_FILE || PYAT*/
 
