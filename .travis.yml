@@ -1,0 +1,15 @@
+
+language: python
+
+python:
+ - "2.7"
+
+install:
+ - pip install numpy
+ - cd pyat
+ - python setup.py install --prefix=prefix
+
+script:
+ - export PYTHONPATH=./prefix/lib/python2.7/site-packages
+ - py.test test
+
