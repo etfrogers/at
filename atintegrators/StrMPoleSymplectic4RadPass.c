@@ -237,7 +237,7 @@ ExportMode struct elem *trackFunction(const atElem *ElemData,struct elem *Elem,
     return Elem;
 }
 
-initStrMPoleSymplectic4RadPass(void) {};
+void initStrMPoleSymplectic4RadPass(void) {};
 
 #endif /*defined(MATLAB_MEX_FILE) || defined(PYAT)*/
 
