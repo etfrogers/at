@@ -2,6 +2,7 @@
 #define AT_H
 
 #include <math.h>
+#include "attypes.h"
 
 #if defined(_WIN32)  /*Windows*/
 #include <Windows.h>
@@ -53,7 +54,6 @@ static const double dnan = 0.0 / 0.0;
 #endif
 
 #endif /*MATLAB_MEX_FILE*/
-
 
 #endif /*AT_H*/
 
