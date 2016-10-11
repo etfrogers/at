@@ -21,7 +21,7 @@ for pass_method in glob.glob(os.path.join(integrator_src, '*Pass.c')):
           define_macros=macros,
           include_dirs=[numpy.get_include(),
                         integrator_src])
-    dist = setup(name=pass_method[:-2], ext_modules=[ext])
+    dist = setup(name=name, ext_modules=[ext])
     try:
         # if installing, fetch the Python path
         install_location = dist.command_obj['install'].install_platlib
