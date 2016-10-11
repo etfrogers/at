@@ -96,7 +96,6 @@ static pass_function pass_method(char *fn_name) {
         char lib_file[300], buffer[100];
         LIBRARYHANDLETYPE dl_handle;
         snprintf(lib_file, sizeof(lib_file), "%s/%s.%s", xstr(INTEGRATOR_PATH), fn_name, PYLIBEXT);
-        printf("%s/%s.pyd", xstr(INTEGRATOR_PATH), fn_name);
         dl_handle = LOADLIBFCN(lib_file);
         if (dl_handle == NULL) {
             snprintf(buffer, sizeof(buffer), "Cannot load %s.%s", fn_name, PYLIBEXT);
