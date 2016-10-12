@@ -4,7 +4,7 @@
    A.Terebilo terebilo@slac.stanford.edu
 */
 
-#include "at.h"
+#include "atelem.c"
 #include "atlalib.c"
 
 
