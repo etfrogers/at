@@ -9,22 +9,6 @@
 #define ExportMode
 #endif
 
-#if defined(_WIN32)
-#include <Windows.h>
-#define isnan(x) _isnan(x)
-#define isinf(x) (!_finite(x))
-#define isfinite(x) _finite(x)
-/* See https://blogs.msdn.microsoft.com/oldnewthing/20100305-00/?p=14713 */
-DECLSPEC_SELECTANY extern const float FLOAT_NaN = ((float)((1e308 * 10)*0.));
-#define NAN FLOAT_NaN
-DECLSPEC_SELECTANY extern const float FLOAT_POSITIVE_INFINITY = ((float)(1e308 * 10));
-#define INFINITY FLOAT_POSITIVE_INFINITY
-typedef int bool;
-#define false 0
-#define true 1
-#else
-#include <stdbool.h>
-#endif /*_WIN32*/
 
 #if defined(MATLAB_MEX_FILE)
 
@@ -99,6 +83,22 @@ static void *atCalloc(size_t count, size_t size)
 #include <numpy/ndarrayobject.h>
 #include <stdlib.h>
 
+#if defined(_WIN32) /*Python on Windows*/
+#include <Windows.h>
+#define isnan(x) _isnan(x)
+#define isinf(x) (!_finite(x))
+#define isfinite(x) _finite(x)
+/* See https://blogs.msdn.microsoft.com/oldnewthing/20100305-00/?p=14713 */
+DECLSPEC_SELECTANY extern const float FLOAT_NaN = ((float)((1e308 * 10)*0.));
+#define NAN FLOAT_NaN
+DECLSPEC_SELECTANY extern const float FLOAT_POSITIVE_INFINITY = ((float)(1e308 * 10));
+#define INFINITY FLOAT_POSITIVE_INFINITY
+typedef int bool;
+#define false 0
+#define true 1
+#else /*Python not on Windows*/
+#include <stdbool.h>
+#endif /*_WIN32*/
 
 #if PY_MAJOR_VERSION >= 3
 #define NUMPY_IMPORT_ARRAY_RETVAL NULL
