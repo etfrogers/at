@@ -3,7 +3,7 @@
 */
 
 
-#include "at.h"
+#include "atelem.c"
 #include "atlalib.c"
 
 static void ATmultTijk(double *r, const double* T)
