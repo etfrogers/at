@@ -1,6 +1,5 @@
 #include "atelem.c"
 #include <time.h>
-#include <math.h>
 #if !(defined PCWIN || defined PCWIN32 || defined PCWIN64 || defined _WIN32)
 #include <sys/time.h>
 #endif

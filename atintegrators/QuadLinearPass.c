@@ -7,7 +7,6 @@
 
 #include "atelem.c"
 #include "atlalib.c"
-#include <math.h>
 
 struct elem {
     double Length;

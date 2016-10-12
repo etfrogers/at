@@ -4,7 +4,7 @@
    A.Terebilo terebilo@ssrl.slac.stanford.edu
 */
 
-#include "atelem.c"
+#include "at.h"
 #include "atlalib.c"
 
 void Matrix66Pass(double *r, const double *M,

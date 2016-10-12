@@ -148,7 +148,7 @@ void BndMPoleSymplectic4Pass(double *r, double le, double irho, double *A, doubl
 	    
 	for(c = 0;c<num_particles;c++)	/* Loop over particles  */
 			{	r6 = r+c*6;	
-			    if(!mxIsNaN(r6[0]))
+			    if(!atIsNaN(r6[0]))
 			    {
 					
 					/*  misalignment at entrance  */

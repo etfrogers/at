@@ -3,7 +3,7 @@
    A.Terebilo terebilo@ssrl.slac.stanford.edu
 */
 
-#include "atelem.c"
+#include "at.h"
 #include "atlalib.c"
 #include "driftkick.c"
 
