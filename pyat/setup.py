@@ -4,23 +4,22 @@ import sys
 import os
 import glob
 
-macros=[('PYAT', None)]
-
-mach_home = os.getenv('MACH_HOME')
-mach_arch = os.getenv('MACHARCH')
-pyversion = "python{0.major}.{0.minor}".format(sys.version_info)
+macros = [('PYAT', None)]
 
 integrator_src = os.path.abspath('../atintegrators')
 integrator_build = None
 
+cflags = []
+if 'linux' in sys.platform or 'darwin' in sys.platform:
+    cflags += ['-Wno-unused-function']
 
 for pass_method in glob.glob(os.path.join(integrator_src, '*Pass.c')):
     name = os.path.basename(pass_method)[:-2]
     ext = Extension(name=name,
-          sources=[pass_method],
-          define_macros=macros,
-          include_dirs=[numpy.get_include(),
-                        integrator_src])
+                    sources=[pass_method],
+                    define_macros=macros,
+                    include_dirs=[numpy.get_include(), integrator_src],
+                    extra_compile_args=cflags)
     dist = setup(name=name, ext_modules=[ext])
     try:
         # if installing, fetch the Python path
@@ -36,5 +35,4 @@ at = Extension('at', sources=['at.c'],
                define_macros=macros,
                include_dirs=[numpy.get_include(), integrator_src])
 
-setup(name='at', py_modules=['elements','load_mat'], ext_modules=[at])
-
+setup(name='at', py_modules=['elements', 'load_mat'], ext_modules=[at])
