@@ -2,7 +2,30 @@
 #define ATCOMMON_H
 
 #ifdef PYAT
+/* Python.h must be included first. */
 #include <Python.h>
+#endif /*PYAT*/
+
+/* All builds */
+#include <stdlib.h>
+#include <math.h>
+
+/* All Windows builds */
+#if defined(PCWIN) || defined(_WIN32)
+#define ExportMode __declspec(dllexport)
+#else
+#define ExportMode
+#endif
+
+
+#ifdef MATLAB_MEX_FILE
+/* Matlab only */
+#include "mex.h"
+#include <matrix.h>
+
+#else /*!MATLAB_MEX_FILE -> PYAT*/
+/* All Python builds */
+#include <stdbool.h>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
 
@@ -15,20 +38,8 @@
 #define PyLong_AsLong PyInt_AsLong
 #endif
 
-#endif /*PYAT*/
-
-#include <stdlib.h>
-#include <math.h>
-
-#ifdef MATLAB_MEX_FILE
-
-#include "mex.h"
-#include <matrix.h>
-
-#else
-
 #if defined(_WIN32)
-
+/* Python Windows builds */
 #include <Windows.h>
 #define isnan(x) _isnan(x)
 #define isinf(x) (!_finite(x))
@@ -43,11 +54,12 @@ typedef int bool;
 #define true 1
 
 #else /* !defined(_WIN32) */
-
 #if defined __SUNPRO_C
+/* Python Sun builds? */
 #include <ieeefp.h>
 #define isfinite finite
 #endif
+/* All other Python builds */
 #ifndef NAN
 static const double dnan = 0.0 / 0.0;
 #define NAN dnan
@@ -56,10 +68,10 @@ static const double dnan = 0.0 / 0.0;
 static const double pinf = 1.0 / 0.0;
 #define INFINITY pinf
 #endif
-#include <stdbool.h>
 
 #endif /* defined(_WIN32) */
 
+/* Redefine for Python builds */
 #define mxIsFinite isfinite
 #define mxIsNaN isnan
 #define mxGetNaN() (NAN)
@@ -69,12 +81,6 @@ static const double pinf = 1.0 / 0.0;
 #define mxFree free
 
 #endif /*MATLAB_MEX_FILE*/
-
-#if defined(PCWIN) || defined(_WIN32)
-#define ExportMode __declspec(dllexport)
-#else
-#define ExportMode
-#endif
 
 struct elem;
 
