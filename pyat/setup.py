@@ -33,6 +33,7 @@ for pass_method in glob.glob(os.path.join(integrator_src, '*Pass.c')):
 print(integrator_build)
 at = Extension('at', sources=['at.c'],
                define_macros=macros,
-               include_dirs=[numpy.get_include(), integrator_src])
+               include_dirs=[numpy.get_include(), integrator_src],
+               extra_compile_args=cflags)
 
 setup(name='at', py_modules=['elements', 'load_mat'], ext_modules=[at])
