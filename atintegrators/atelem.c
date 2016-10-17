@@ -5,6 +5,11 @@
 #ifndef ATELEM_C
 #define ATELEM_C
 
+#ifdef PYAT
+/* Python.h must be included first. */
+#include <Python.h>
+#endif /*PYAT*/
+
 #include "atcommon.h"
 
 /*----------------------------------------------------*/
@@ -100,6 +105,18 @@ static double* atGetOptionalDoubleArray(const mxArray *ElemData, const char *fie
 /*----------------------------------------------------*/
 
 #if defined(PYAT)
+
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/ndarrayobject.h>
+
+#if PY_MAJOR_VERSION >= 3
+#define NUMPY_IMPORT_ARRAY_RETVAL NULL
+#define NUMPY_IMPORT_ARRAY_TYPE void *
+#else
+#define NUMPY_IMPORT_ARRAY_RETVAL
+#define NUMPY_IMPORT_ARRAY_TYPE void
+#define PyLong_AsLong PyInt_AsLong
+#endif
 
 typedef PyObject atElem;
 #define check_error() if (PyErr_Occurred()) return NULL
