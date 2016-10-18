@@ -13,6 +13,9 @@
 #define mxIsNaN isnan
 #define mxGetNaN() (NAN)
 #define mxGetInf() (INFINITY)
+#define mxMalloc malloc
+#define mxCalloc calloc
+#define mxFree free
 #endif
 
 #endif /*AT_H*/

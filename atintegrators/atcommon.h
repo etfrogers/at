@@ -16,7 +16,7 @@
 
 #ifdef MATLAB_MEX_FILE
 /* Matlab only */
-#include "mex.h"
+#include <mex.h>
 #include <matrix.h>
 
 #else
