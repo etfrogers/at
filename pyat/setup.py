@@ -32,7 +32,7 @@ dist = setup(name='pyat.atintegrators', package_dir={'pyat': ''}, packages=['pya
 try:
     install_location = dist.command_obj['install'].install_platlib
     if integrator_build is None:
-        integrator_build = os.path.join(install_location, 'pyat', 'atintegrators', '.'.join(('%s', suffix)))
+        integrator_build = '"{}"'.format(os.path.join(install_location, 'pyat', 'atintegrators', '.'.join(('%s', suffix))))
         macros.append(('INTEGRATOR_PATH', integrator_build))
     print(integrator_build)
     at = Extension('pyat.at', sources=['at.c'],

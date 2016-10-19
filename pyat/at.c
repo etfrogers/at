@@ -50,10 +50,8 @@ typedef PyObject atElem;
   #define PyUnicode_AsUTF8 PyString_AsString
 #endif
 
-#define xstr(s) str(s)
-#define str(s) #s
 #ifndef INTEGRATOR_PATH
-#define INTEGRATOR_PATH ../atintegrators/%s.so
+#define INTEGRATOR_PATH "../atintegrators/%s.so"
 #endif /*INTEGRATOR_PATH*/
 
 typedef struct elem *(*pass_function)(const PyObject *element, struct elem *elemptr,
@@ -101,7 +99,7 @@ static pass_function pass_method(char *fn_name) {
     else {
         char lib_file[300], buffer[200];
         LIBRARYHANDLETYPE dl_handle;
-        snprintf(lib_file, sizeof(lib_file), xstr(INTEGRATOR_PATH), fn_name);
+        snprintf(lib_file, sizeof(lib_file), INTEGRATOR_PATH, fn_name);
         dl_handle = LOADLIBFCN(lib_file);
         if (dl_handle == NULL) {
             snprintf(buffer, sizeof(buffer), "Cannot load %s", lib_file);
