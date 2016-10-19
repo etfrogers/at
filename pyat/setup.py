@@ -17,8 +17,10 @@ if suffix is None:
     if sys.platform.startswith('win32'):
         suffix = '.pyd'
     else:
-        cflags += ['-Wno-unused-function']
         suffix = '.so'
+
+if not sys.platform.startswith('win32'):
+    cflags += ['-Wno-unused-function']
 
 
 def integrator_extension(pass_method):
