@@ -1,7 +1,7 @@
 import pytest
 import numpy
 from pyat import at
-import elements
+from pyat import elements
 
 
 @pytest.fixture
