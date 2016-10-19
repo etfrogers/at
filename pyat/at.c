@@ -285,7 +285,7 @@ static PyMethodDef AtMethods[] = {
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
-MOD_INIT(at)
+MOD_INIT(atpass)
 {
 #if PY_MAJOR_VERSION >= 3
     static struct PyModuleDef moduledef = {
@@ -301,7 +301,7 @@ MOD_INIT(at)
     };
     PyObject *m = PyModule_Create(&moduledef);
 #else
-    PyObject *m = Py_InitModule3("at", AtMethods,
+    PyObject *m = Py_InitModule3("atpass", AtMethods,
         "Clone of atpass in Accelerator Toolbox");
 #endif
     if (m == NULL)
@@ -319,7 +319,7 @@ int main(int argc, char *argv[]) {
     Py_Initialize();
 
     /* Add a static module */
-    initat();
+    initatpass();
     return 0;
 }
 #endif
