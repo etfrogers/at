@@ -45,8 +45,7 @@ try:
                    define_macros=macros,
                    include_dirs=[numpy.get_include(), integrator_src],
                    extra_compile_args=cflags)
-    setup(name='pyat', package_dir={'pyat': ''}, packages=['pyat'], py_modules=['elements', 'load_mat'],
-          ext_modules=[at])
+    setup(name='pyat', package_dir={'pyat': ''}, packages=['pyat'], ext_modules=[at])
 
 except KeyError:
     print('\npyat should be built in one step by calling "setup.py install"\n')
