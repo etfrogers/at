@@ -11,6 +11,7 @@
 
 # Virtual environment
 venv
+venv3
 
 # pyat build stuff
 pyat/build
