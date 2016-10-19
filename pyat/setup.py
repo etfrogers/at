@@ -1,4 +1,5 @@
 from distutils.core import setup, Extension
+from distutils import sysconfig
 import numpy
 import sys
 import os
@@ -10,11 +11,14 @@ integrator_src = os.path.abspath('../atintegrators')
 integrator_build = None
 
 cflags = []
-if sys.platform.startswith('win32'):
-    suffix = 'pyd'
-else:
-    cflags += ['-Wno-unused-function']
-    suffix = 'so'
+
+suffix = sysconfig.get_config_var('EXT_SUFFIX')
+if suffix is None:
+    if sys.platform.startswith('win32'):
+        suffix = '.pyd'
+    else:
+        cflags += ['-Wno-unused-function']
+        suffix = '.so'
 
 
 def integrator_extension(pass_method):
@@ -32,7 +36,7 @@ dist = setup(name='pyat.atintegrators', package_dir={'pyat': ''}, packages=['pya
 try:
     install_location = dist.command_obj['install'].install_platlib
     if integrator_build is None:
-        integrator_build = '"{}"'.format(os.path.join(install_location, 'pyat', 'atintegrators', '.'.join(('%s', suffix))))
+        integrator_build = '"{}"'.format(os.path.join(install_location, 'pyat', 'atintegrators', '%s{}'.format(suffix)))
         macros.append(('INTEGRATOR_PATH', integrator_build))
     print(integrator_build)
     at = Extension('pyat.at', sources=['at.c'],
