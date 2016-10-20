@@ -4,7 +4,6 @@
 /* All builds */
 #include <stdlib.h>
 #include <math.h>
-#include "attypes.h"
 
 /* All Windows builds */
 #if defined(PCWIN) || defined(_WIN32)
@@ -16,12 +15,12 @@
 
 #ifdef MATLAB_MEX_FILE
 /* Matlab only */
-#include "mex.h"
+#include <mex.h>
 #include <matrix.h>
 
 #else
 
-#if defined(_WIN32)
+#if defined(_WIN32) && (_MSC_VER < 1800)
 /* Python Windows builds */
 #include <Windows.h>
 #define isnan(x) _isnan(x)
