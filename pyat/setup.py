@@ -3,11 +3,22 @@ import numpy
 import sys
 import os
 import glob
+import shutil
 
 
 macros = [('PYAT', None)]
 
-integrator_src = os.path.abspath('../atintegrators')
+integrator_src_orig = os.path.abspath('../atintegrators')
+integrator_src = './integrator-src'
+
+# Copy files into pyat for distribution.
+source_files = glob.glob(os.path.join(integrator_src_orig, '*.[ch]'))
+if not os.path.exists(integrator_src):
+    os.makedirs(integrator_src)
+for f in source_files:
+    shutil.copy2(f, integrator_src)
+
+pass_methods = glob.glob(os.path.join(integrator_src, '*Pass.c'))
 
 cflags = []
 
@@ -16,7 +27,8 @@ if not sys.platform.startswith('win32'):
 
 
 def integrator_extension(pass_method):
-    name = ".".join(('at', 'integrators', os.path.basename(pass_method)[:-2]))
+    name, _ = os.path.splitext(os.path.basename(pass_method))
+    name = ".".join(('at', 'integrators', name))
     return Extension(name=name,
                      sources=[pass_method],
                      include_dirs=[numpy.get_include(), integrator_src],
@@ -24,7 +36,6 @@ def integrator_extension(pass_method):
                      extra_compile_args=cflags)
 
 
-integ_list = glob.glob(os.path.join(integrator_src, '*Pass.c'))
 
 at = Extension('at.atpass',
                sources=['at.c'],
@@ -35,8 +46,10 @@ at = Extension('at.atpass',
 setup(name='at',
       version='0.0.1',
       description='Accelerator Toolbox',
+      author='The AT collaboration',
+      author_email='atcollab-general@lists.sourceforge.net',
       install_requires=['numpy'],
       package_dir={'at': ''},
       packages=['at', 'at.integrators'],
-      ext_modules=[at] + [integrator_extension(pm) for pm in integ_list],
+      ext_modules=[at] + [integrator_extension(pm) for pm in pass_methods],
       zip_safe=False)
