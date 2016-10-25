@@ -15,7 +15,10 @@ venv3
 
 # pyat build stuff
 pyat/build
+pyat/dist
+pyat/at.egg-info
 pyat/prefix
+pyat/integrator-src
 
 # cmake
 CMakeCache.txt
