@@ -31,12 +31,14 @@ typedef PyObject atElem;
 #define FREELIBFCN(libfilename) FreeLibrary((libfilename))
 #define LOADLIBFCN(libfilename) LoadLibrary((libfilename))
 #define GETTRACKFCN(libfilename) GetProcAddress((libfilename),ATPY_PASS)
+#define OBJECTEXT "\\%s.pyd"
 #else
 #include <dlfcn.h>
 #define LIBRARYHANDLETYPE void *
 #define FREELIBFCN(libfilename) dlclose(libfilename)
 #define LOADLIBFCN(libfilename) dlopen((libfilename),RTLD_LAZY)
 #define GETTRACKFCN(libfilename) dlsym((libfilename),ATPY_PASS)
+#define OBJECTEXT "/%s.so"
 #endif
 
 #if PY_MAJOR_VERSION >= 3
@@ -49,10 +51,6 @@ typedef PyObject atElem;
   #define MOD_INIT(name) PyMODINIT_FUNC init##name(void)
   #define PyUnicode_AsUTF8 PyString_AsString
 #endif
-
-#ifndef INTEGRATOR_PATH
-#define INTEGRATOR_PATH "../atintegrators/%s.so"
-#endif /*INTEGRATOR_PATH*/
 
 typedef struct elem *(*pass_function)(const PyObject *element, struct elem *elemptr,
         double *r_in, int num_particles, struct parameters *param);
@@ -89,6 +87,26 @@ static struct LibraryListElement* SearchLibraryList(struct LibraryListElement *h
         return NULL;
 }
 
+static char *get_integrators(void) {
+    PyObject *myModule, *fileobj, *myFunction, *dirobj;
+    char *integrator_path;
+    myModule = PyImport_ImportModule("at.integrators");
+    fileobj = PyObject_GetAttrString(myModule, "__file__");
+    myModule = PyImport_ImportModule("os.path");
+    myFunction = PyObject_GetAttrString(myModule, "dirname");
+    dirobj = PyObject_CallFunctionObjArgs(myFunction, fileobj, NULL);
+    integrator_path = PyUnicode_AsUTF8(dirobj);
+    return integrator_path;
+}
+
+static char *get_build_pattern(void) {
+    PyObject *myModule = PyImport_ImportModule("distutils.sysconfig");
+    PyObject *myFunction = PyObject_GetAttrString(myModule, "get_config_var");
+    PyObject *ext = PyObject_CallFunction(myFunction, "s", "EXT_SUFFIX");
+    char *ext_string = PyUnicode_AsUTF8(ext);
+    return ext_string;
+}
+
 static pass_function pass_method(char *fn_name) {
     pass_function fn_handle = NULL;
     struct LibraryListElement *LibraryListPtr = SearchLibraryList(LibraryList, fn_name);
@@ -97,9 +115,21 @@ static pass_function pass_method(char *fn_name) {
         fn_handle = LibraryListPtr->FunctionHandle;
     }
     else {
-        char lib_file[300], buffer[200];
         LIBRARYHANDLETYPE dl_handle;
-        snprintf(lib_file, sizeof(lib_file), INTEGRATOR_PATH, fn_name);
+        char lib_file[300], buffer[200];
+        char dest[300];
+        char *ip = get_integrators();
+        char *ext = get_build_pattern();
+        snprintf(dest, sizeof(dest), "%s", ip);
+        if (ext) {
+            strcat(dest, "/%s");
+            strcat(dest, ext);
+        } else {
+            strcat(dest, OBJECTEXT);
+        }
+
+
+        snprintf(lib_file, sizeof(lib_file), dest, fn_name);
         dl_handle = LOADLIBFCN(lib_file);
         if (dl_handle == NULL) {
             snprintf(buffer, sizeof(buffer), "Cannot load %s", lib_file);

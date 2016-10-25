@@ -8,11 +8,9 @@ python:
  - "3.5"
 
 install:
- - pip install numpy
  - cd pyat
- - python setup.py install --prefix=prefix
+ - python setup.py install
 
 script:
- - export PYTHONPATH=./prefix/lib/python$TRAVIS_PYTHON_VERSION/site-packages
  - py.test test
 
