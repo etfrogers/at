@@ -31,14 +31,16 @@ typedef PyObject atElem;
 #define FREELIBFCN(libfilename) FreeLibrary((libfilename))
 #define LOADLIBFCN(libfilename) LoadLibrary((libfilename))
 #define GETTRACKFCN(libfilename) GetProcAddress((libfilename),ATPY_PASS)
-#define OBJECTEXT "\\%s.pyd"
+#define SEPARATOR "\\"
+#define OBJECTEXT ".pyd"
 #else
 #include <dlfcn.h>
 #define LIBRARYHANDLETYPE void *
 #define FREELIBFCN(libfilename) dlclose(libfilename)
 #define LOADLIBFCN(libfilename) dlopen((libfilename),RTLD_LAZY)
 #define GETTRACKFCN(libfilename) dlsym((libfilename),ATPY_PASS)
-#define OBJECTEXT "/%s.so"
+#define SEPARATOR "/"
+#define OBJECTEXT ".so"
 #endif
 
 #if PY_MAJOR_VERSION >= 3
@@ -106,15 +108,23 @@ static PyObject *get_integrators(void) {
     return dirobj;
 }
 
-static char *get_build_pattern(void) {
-    PyObject *myModule = PyImport_ImportModule("distutils.sysconfig");
-    PyObject *myFunction = PyObject_GetAttrString(myModule, "get_config_var");
-    PyObject *ext = PyObject_CallFunction(myFunction, "s", "EXT_SUFFIX");
-    char *ext_string = PyUnicode_AsUTF8(ext);
-    Py_XDECREF(ext);
-    Py_XDECREF(myFunction);
-    Py_XDECREF(myModule);
-    return ext_string;
+/* Query Python for the full extension given to shared objects.
+ * If none is defined, return NULL.
+ */
+static char *get_ext_suffix(void) {
+    PyObject *sysconfig_module, *get_config_var_fn, *ext_suffix;
+    sysconfig_module = PyImport_ImportModule("distutils.sysconfig");
+    if (sysconfig_module == NULL) return NULL;
+    get_config_var_fn = PyObject_GetAttrString(sysconfig_module, "get_config_var");
+    Py_DECREF(sysconfig_module);
+    if (get_config_var_fn == NULL) return NULL;
+    ext_suffix = PyObject_CallFunction(get_config_var_fn, "s", "EXT_SUFFIX");
+    Py_DECREF(get_config_var_fn);
+    if (ext_suffix == Py_None) {
+        return NULL;
+    } else {
+        return PyUnicode_AsUTF8(ext_suffix);
+    }
 }
 
 static pass_function pass_method(char *fn_name) {
@@ -316,7 +326,8 @@ static PyMethodDef AtMethods[] = {
 
 MOD_INIT(atpass)
 {
-    PyObject  *integrator_path_obj;
+    PyObject *integrator_path_obj;
+    char *ext_suffix;
 
 #if PY_MAJOR_VERSION >= 3
     static struct PyModuleDef moduledef = {
@@ -340,7 +351,11 @@ MOD_INIT(atpass)
 
     integrator_path_obj = get_integrators();
     if (integrator_path_obj == NULL) return MOD_ERROR_VAL;
-    snprintf(integrator_path, sizeof(integrator_path), "%s%s", PyUnicode_AsUTF8(integrator_path_obj), OBJECTEXT);
+    ext_suffix = get_ext_suffix();
+    if (!ext_suffix) {
+        ext_suffix = OBJECTEXT;
+    }
+    snprintf(integrator_path, sizeof(integrator_path), "%s%s%%s%s", PyUnicode_AsUTF8(integrator_path_obj), SEPARATOR, ext_suffix);
     Py_DECREF(integrator_path_obj);
 
     return MOD_SUCCESS_VAL(m);
