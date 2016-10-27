@@ -31,14 +31,16 @@ typedef PyObject atElem;
 #define FREELIBFCN(libfilename) FreeLibrary((libfilename))
 #define LOADLIBFCN(libfilename) LoadLibrary((libfilename))
 #define GETTRACKFCN(libfilename) GetProcAddress((libfilename),ATPY_PASS)
-#define OBJECTEXT "\\%s.pyd"
+#define SEPARATOR "\\"
+#define OBJECTEXT ".pyd"
 #else
 #include <dlfcn.h>
 #define LIBRARYHANDLETYPE void *
 #define FREELIBFCN(libfilename) dlclose(libfilename)
 #define LOADLIBFCN(libfilename) dlopen((libfilename),RTLD_LAZY)
 #define GETTRACKFCN(libfilename) dlsym((libfilename),ATPY_PASS)
-#define OBJECTEXT "/%s.so"
+#define SEPARATOR "/"
+#define OBJECTEXT ".so"
 #endif
 
 #if PY_MAJOR_VERSION >= 3
@@ -59,6 +61,7 @@ static npy_uint32 num_elements = 0;
 static struct elem **elemdata_list = NULL;
 static PyObject **element_list = NULL;
 static pass_function *integrator_list = NULL;
+static char integrator_path[300];
 
 /* Directly copied from atpass.c */
 static struct LibraryListElement {
@@ -87,24 +90,37 @@ static struct LibraryListElement* SearchLibraryList(struct LibraryListElement *h
         return NULL;
 }
 
-static char *get_integrators(void) {
-    PyObject *myModule, *fileobj, *myFunction, *dirobj;
-    char *integrator_path;
-    myModule = PyImport_ImportModule("at.integrators");
-    fileobj = PyObject_GetAttrString(myModule, "__file__");
-    myModule = PyImport_ImportModule("os.path");
-    myFunction = PyObject_GetAttrString(myModule, "dirname");
-    dirobj = PyObject_CallFunctionObjArgs(myFunction, fileobj, NULL);
-    integrator_path = PyUnicode_AsUTF8(dirobj);
-    return integrator_path;
+static PyObject *get_integrators(void) {
+    PyObject *at_module, *os_module, *fileobj, *dirname_function, *dirobj;
+    at_module = PyImport_ImportModule("at.integrators");
+    if (at_module == NULL) return NULL;
+    fileobj = PyObject_GetAttrString(at_module, "__file__");
+    Py_DECREF(at_module);
+    if (fileobj == NULL) return NULL;
+    os_module = PyImport_ImportModule("os.path");
+    if (os_module == NULL) return NULL;
+    dirname_function = PyObject_GetAttrString(os_module, "dirname");
+    Py_DECREF(os_module);
+    if (dirname_function == NULL) return NULL;
+    dirobj = PyObject_CallFunctionObjArgs(dirname_function, fileobj, NULL);
+    Py_DECREF(fileobj);
+    Py_DECREF(dirname_function);
+    return dirobj;
 }
 
-static char *get_build_pattern(void) {
-    PyObject *myModule = PyImport_ImportModule("distutils.sysconfig");
-    PyObject *myFunction = PyObject_GetAttrString(myModule, "get_config_var");
-    PyObject *ext = PyObject_CallFunction(myFunction, "s", "EXT_SUFFIX");
-    char *ext_string = PyUnicode_AsUTF8(ext);
-    return ext_string;
+/* Query Python for the full extension given to shared objects.
+ * If none is defined, return NULL.
+ */
+static PyObject *get_ext_suffix(void) {
+    PyObject *sysconfig_module, *get_config_var_fn, *ext_suffix;
+    sysconfig_module = PyImport_ImportModule("distutils.sysconfig");
+    if (sysconfig_module == NULL) return NULL;
+    get_config_var_fn = PyObject_GetAttrString(sysconfig_module, "get_config_var");
+    Py_DECREF(sysconfig_module);
+    if (get_config_var_fn == NULL) return NULL;
+    ext_suffix = PyObject_CallFunction(get_config_var_fn, "s", "EXT_SUFFIX");
+    Py_DECREF(get_config_var_fn);
+    return ext_suffix;
 }
 
 static pass_function pass_method(char *fn_name) {
@@ -117,19 +133,8 @@ static pass_function pass_method(char *fn_name) {
     else {
         LIBRARYHANDLETYPE dl_handle;
         char lib_file[300], buffer[200];
-        char dest[300];
-        char *ip = get_integrators();
-        char *ext = get_build_pattern();
-        snprintf(dest, sizeof(dest), "%s", ip);
-        if (ext) {
-            strcat(dest, "/%s");
-            strcat(dest, ext);
-        } else {
-            strcat(dest, OBJECTEXT);
-        }
 
-
-        snprintf(lib_file, sizeof(lib_file), dest, fn_name);
+        snprintf(lib_file, sizeof(lib_file), integrator_path, fn_name);
         dl_handle = LOADLIBFCN(lib_file);
         if (dl_handle == NULL) {
             snprintf(buffer, sizeof(buffer), "Cannot load %s", lib_file);
@@ -317,6 +322,9 @@ static PyMethodDef AtMethods[] = {
 
 MOD_INIT(atpass)
 {
+    PyObject *integ_path_obj, *ext_suffix_obj;
+    char *ext_suffix, *integ_path;
+
 #if PY_MAJOR_VERSION >= 3
     static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
@@ -334,9 +342,19 @@ MOD_INIT(atpass)
     PyObject *m = Py_InitModule3("atpass", AtMethods,
         "Clone of atpass in Accelerator Toolbox");
 #endif
-    if (m == NULL)
-       return MOD_ERROR_VAL;
+    if (m == NULL) return MOD_ERROR_VAL;
     import_array();
+
+    integ_path_obj = get_integrators();
+    if (integ_path_obj == NULL) return MOD_ERROR_VAL;
+    ext_suffix_obj = get_ext_suffix();
+    if (ext_suffix_obj == NULL) return MOD_ERROR_VAL;
+    ext_suffix = (ext_suffix_obj == Py_None) ? OBJECTEXT : PyUnicode_AsUTF8(ext_suffix_obj);
+    integ_path = PyUnicode_AsUTF8(integ_path_obj);
+    snprintf(integrator_path, sizeof(integrator_path), "%s%s%%s%s", integ_path, SEPARATOR, ext_suffix);
+    Py_DECREF(integ_path_obj);
+    Py_DECREF(ext_suffix_obj);
+
     return MOD_SUCCESS_VAL(m);
 }
 
