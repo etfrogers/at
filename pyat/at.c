@@ -111,7 +111,7 @@ static PyObject *get_integrators(void) {
 /* Query Python for the full extension given to shared objects.
  * If none is defined, return NULL.
  */
-static char *get_ext_suffix(void) {
+static PyObject *get_ext_suffix(void) {
     PyObject *sysconfig_module, *get_config_var_fn, *ext_suffix;
     sysconfig_module = PyImport_ImportModule("distutils.sysconfig");
     if (sysconfig_module == NULL) return NULL;
@@ -120,11 +120,7 @@ static char *get_ext_suffix(void) {
     if (get_config_var_fn == NULL) return NULL;
     ext_suffix = PyObject_CallFunction(get_config_var_fn, "s", "EXT_SUFFIX");
     Py_DECREF(get_config_var_fn);
-    if (ext_suffix == Py_None) {
-        return NULL;
-    } else {
-        return PyUnicode_AsUTF8(ext_suffix);
-    }
+    return ext_suffix;
 }
 
 static pass_function pass_method(char *fn_name) {
@@ -326,8 +322,8 @@ static PyMethodDef AtMethods[] = {
 
 MOD_INIT(atpass)
 {
-    PyObject *integrator_path_obj;
-    char *ext_suffix;
+    PyObject *integ_path_obj, *ext_suffix_obj;
+    char *ext_suffix, *integ_path;
 
 #if PY_MAJOR_VERSION >= 3
     static struct PyModuleDef moduledef = {
@@ -349,14 +345,15 @@ MOD_INIT(atpass)
     if (m == NULL) return MOD_ERROR_VAL;
     import_array();
 
-    integrator_path_obj = get_integrators();
-    if (integrator_path_obj == NULL) return MOD_ERROR_VAL;
-    ext_suffix = get_ext_suffix();
-    if (!ext_suffix) {
-        ext_suffix = OBJECTEXT;
-    }
-    snprintf(integrator_path, sizeof(integrator_path), "%s%s%%s%s", PyUnicode_AsUTF8(integrator_path_obj), SEPARATOR, ext_suffix);
-    Py_DECREF(integrator_path_obj);
+    integ_path_obj = get_integrators();
+    if (integ_path_obj == NULL) return MOD_ERROR_VAL;
+    ext_suffix_obj = get_ext_suffix();
+    if (ext_suffix_obj == NULL) return MOD_ERROR_VAL;
+    ext_suffix = (ext_suffix_obj == Py_None) ? OBJECTEXT : PyUnicode_AsUTF8(ext_suffix_obj);
+    integ_path = PyUnicode_AsUTF8(integ_path_obj);
+    snprintf(integrator_path, sizeof(integrator_path), "%s%s%%s%s", integ_path, SEPARATOR, ext_suffix);
+    Py_DECREF(integ_path_obj);
+    Py_DECREF(ext_suffix_obj);
 
     return MOD_SUCCESS_VAL(m);
 }
